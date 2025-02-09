@@ -1,0 +1,19 @@
+{
+  "name": "control-my-order-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1692.0",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "multer": "^1.4.2",
+    "sequelize": "^6.6.5",
+    "sqlite3": "^5.0.2"
+  },
+  "type": "module"
+}
