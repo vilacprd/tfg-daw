@@ -1,0 +1,24 @@
+/* 1) Carga las directivas base de Tailwind */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 2) Puedes mantener algunas reglas globales mínimas aquí */
+
+/* Ejemplo de tipografía global por defecto */
+html, body {
+  @apply m-0 p-0 h-full; /* Usa Tailwind para reset de márgenes y altura */
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Si deseas un color de fondo claro por defecto */
+  @apply bg-white text-gray-900; 
+}
+
+/* Si quieres forzar line-height y font-weight globales (opcional) */
+:root {
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+/* Reemplaza el 'color-scheme: light dark' por un modo 'dark' de Tailwind
+   (usando la variante 'dark:' en tus clases o configurando darkMode)
+   o podrías dejarlo si lo quieres para los scrollbars del navegador, etc. */

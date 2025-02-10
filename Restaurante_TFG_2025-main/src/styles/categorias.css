@@ -1,0 +1,16 @@
+.categoria-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px;
+}
+
+.categoria-title {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.categoria-description {
+  font-size: 16px;
+  color: #666;
+}
