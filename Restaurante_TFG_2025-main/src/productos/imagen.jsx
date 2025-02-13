@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { obtenerUrlDeImagen } from '../connections';
+import { obtenerUrlDeImagenProductos } from '../connections';
 
 const Imagen = ({ imagenKey }) => {
   const [imageUrl, setImageUrl] = useState('');
 
   useEffect(() => {
     const fetchImageUrl = async () => {
-      const url = await obtenerUrlDeImagen(imagenKey);
+      const url = await obtenerUrlDeImagenProductos(imagenKey);
       setImageUrl(url);
     };
     fetchImageUrl();

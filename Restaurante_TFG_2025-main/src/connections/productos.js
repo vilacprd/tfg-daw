@@ -15,9 +15,6 @@ export const fetchProductos = async () => {
 
 export const createProducto = async (producto) => {
   try {
-    console.log('intentando crear producto ', producto.nombre);
-    console.log('intentando crear producto ', producto.personalizable);
-    console.log('intentando crear producto ', producto.isActive);
     const response = await axios.post(`${API_URL}/productos`, producto, {
       headers: {
         'Content-Type': 'application/json',

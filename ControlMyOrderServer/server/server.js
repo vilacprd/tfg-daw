@@ -404,7 +404,7 @@ const S3_BUCKET = 'img-my-order';
 /* 
  * Rutas para AWS S3: Generar URL pre-firmada para subir y descargar imágenes
  */
-app.get('/s3/generateUploadUrl', (req, res) => {
+app.get('/s3/generateUploadUrl/productos', (req, res) => {
   const objectKey = req.query.key; // Por ejemplo: "uploads/imagen_usuario.jpg"
   if (!objectKey) {
     return res.status(400).json({ error: 'Falta el parámetro "key".' });
@@ -426,7 +426,7 @@ app.get('/s3/generateUploadUrl', (req, res) => {
   });
 });
 
-app.get('/s3/generateDownloadUrl', (req, res) => {
+app.get('/s3/generateDownloadUrl/productos', (req, res) => {
   const objectKey = req.query.key; // Por ejemplo: "uploads/imagen_usuario.jpg"
   if (!objectKey) {
     return res.status(400).json({ error: 'Falta el parámetro "key".' });

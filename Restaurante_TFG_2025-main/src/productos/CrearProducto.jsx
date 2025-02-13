@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { createProducto, updateProducto, fetchCategorias, fetchIngredientes, uploadImageToS3 } from '../connections';
+import { createProducto, updateProducto, fetchCategorias, fetchIngredientes, uploadImageToS3Productos } from '../connections';
 import { ProductoConnection } from '../models/model';
 
 const CrearProducto = ({ handleCloseModal, productoEdit }) => {
@@ -84,7 +84,7 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
 
     // Subir imagen a S3 (si existe)
     if (imagen) {
-      await uploadImageToS3(imagen);
+      await uploadImageToS3Productos(imagen);
     }
 
     // Construir el objeto Producto

@@ -144,9 +144,10 @@ export const deleteIngrediente = async (id) => {
 
 // getUrlImagenes
 
-const getUploadUrl = async (file) => {
+const getUploadUrlProductos = async (file) => {
   try {
-    const response = await fetch(`http://localhost:3000/s3/generateUploadUrl?key=${file.name}`);
+   // file = "/Img_Productos/" + file;
+    const response = await fetch(`http://localhost:3000/s3/generateUploadUrl/productos?key=${file.name}`);
     const data = await response.json();
     return data.uploadUrl; // Devuelve la URL pre-firmada
   } catch (error) {
@@ -155,8 +156,8 @@ const getUploadUrl = async (file) => {
   }
 };
 
-export const uploadImageToS3 = async (file) => {
-  const uploadUrl = await getUploadUrl(file);
+export const uploadImageToS3Productos = async (file) => {
+  const uploadUrl = await getUploadUrlProductos(file);
   if (!uploadUrl) return;
 
   try {
@@ -176,10 +177,10 @@ export const uploadImageToS3 = async (file) => {
   }
 };
 
-  export const obtenerUrlDeImagen = async (key) => {
+  export const obtenerUrlDeImagenProductos = async (key) => {
     try {
       console.log('Key:', key)
-      const response = await fetch(`http://localhost:3000/s3/generateDownloadUrl?key=${key}`);
+      const response = await fetch(`http://localhost:3000/s3/generateDownloadUrl/productos?key=${key}`);
       const data = await response.json();
       return data.downloadUrl;
     } catch (error) {
@@ -188,4 +189,4 @@ export const uploadImageToS3 = async (file) => {
     }
   };
 
-export default { API_URL, getUploadUrl };
+export default { API_URL, getUploadUrl: getUploadUrlProductos };
