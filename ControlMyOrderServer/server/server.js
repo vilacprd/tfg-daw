@@ -6,12 +6,16 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { Ingrediente, Category, ProductoConnection } from './models.js'; // Importa las clases
+import { Usuario } from './models.js'; // Importa el modelo Usuario
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 // 
 import AWS from 'aws-sdk';
 
 const app = express();
 const port = 3000;
+const SECRET_KEY = "claveSecreta"; // Cámbiala en producción
 
 // Middleware
 app.use(cors());
@@ -331,6 +335,98 @@ app.delete('/server/ingredientes/:id', async (req, res) => {
 app.listen(port, () => {
   console.log(`Servidor corriendo en http://localhost:${port}`);
 });
+
+
+/*
+ *
+ *  Usuarios
+ * 
+ */
+app.post('/server/register', async (req, res) => {
+  try {
+    const { nombre, password, rol } = req.body;
+    if (!nombre || !password || !rol) {
+      return res.status(400).json({ message: "Todos los campos son obligatorios" });
+    }
+
+    const usuarioExistente = await Usuario.findOne({ where: { nombre } });
+    if (usuarioExistente) {
+      return res.status(400).json({ message: "El usuario ya existe" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const nuevoUsuario = await Usuario.create({
+      nombre,
+      password: hashedPassword,
+      rol,
+    });
+
+    res.status(201).json({ message: "Usuario creado correctamente", usuario: nuevoUsuario });
+  } catch (error) {
+    console.error("❌ Error al registrar usuario:", error);
+    res.status(500).json({ message: "Error en el servidor", error });
+  }
+});
+
+
+
+app.post('/server/login', async (req, res) => {
+  try {
+    const { nombre, password } = req.body;
+
+    // Buscar usuario en la base de datos
+    const usuario = await Usuario.findOne({ where: { nombre } });
+
+    if (!usuario) {
+      return res.status(400).json({ message: "Usuario no encontrado" });
+    }
+
+    // Comparar la contraseña ingresada con la guardada en la base de datos
+    const esValida = await bcrypt.compare(password, usuario.password);
+    if (!esValida) {
+      return res.status(401).json({ message: "Contraseña incorrecta" });
+    }
+
+    // Generar Token JWT
+    const token = jwt.sign(
+      { id: usuario.id, nombre: usuario.nombre, rol: usuario.rol },
+      SECRET_KEY,
+      { expiresIn: "2h" } // El token expira en 2 horas
+    );
+
+    res.json({ token, usuario: { id: usuario.id, nombre: usuario.nombre, rol: usuario.rol } });
+  } catch (error) {
+    console.error("❌ Error en login:", error);
+    res.status(500).json({ message: "Error en el servidor", error });
+  }
+});
+
+const autenticarToken = (req, res, next) => {
+  const token = req.headers["authorization"];
+  if (!token) return res.status(401).json({ message: "Acceso denegado" });
+
+  try {
+    const verificado = jwt.verify(token.split(" ")[1], SECRET_KEY);
+    req.usuario = verificado;
+    next();
+  } catch (error) {
+    res.status(403).json({ message: "Token no válido" });
+  }
+};
+
+
+app.get('/server/perfil', autenticarToken, async (req, res) => {
+  try {
+    const usuario = await Usuario.findByPk(req.usuario.id, { attributes: ['id', 'nombre','rol'] });
+    if (!usuario) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+    res.json(usuario);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener perfil", error });
+  }
+});
+
 
 /*
  *
