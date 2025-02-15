@@ -7,14 +7,18 @@ import CrearCategoriaModal from './categorias/CrearCategoriaModal';
 import CrearProductoModal from './productos/CrearProductoModal';
 import CrearIngredienteModal from './ingredientes/CrearIngredienteModal';
 import axios from 'axios';
+import CrearUsuario from './components/Users/CrearUsuario'; // Importa el componente
 
 const App = () => {
+  // Estados para las secciones
   const [showProductos, setShowProductos] = useState(false);
   const [showCategorias, setShowCategorias] = useState(false);
   const [showIngredientes, setShowIngredientes] = useState(false);
   const [showCrearCategoria, setShowCrearCategoria] = useState(false);
   const [showCrearProducto, setShowCrearProducto] = useState(false);
   const [showCrearIngrediente, setShowCrearIngrediente] = useState(false);
+  const [showCrearUsuario, setShowCrearUsuario] = useState(false);
+
   const [categorias, setCategorias] = useState([]);
   const [ingredientes, setIngredientes] = useState([]);
   const [ingredienteEdit, setIngredienteEdit] = useState(null);
@@ -43,69 +47,52 @@ const App = () => {
     fetchIngredientes();
   }, []);
 
-  const handleButtonClick = () => {
-    // Activa siempre Productos, sin conmutar
-    setShowProductos(true);
-  
-    // Asegúrate de que las demás secciones estén desactivadas
+  // Función para ocultar todas las secciones
+  const hideAllSections = () => {
+    setShowProductos(false);
     setShowCategorias(false);
     setShowIngredientes(false);
     setShowCrearCategoria(false);
     setShowCrearProducto(false);
     setShowCrearIngrediente(false);
+    setShowCrearUsuario(false);
   };
-  
+
+  // Funciones para manejar los clics en cada botón
+  const handleButtonClick = () => {
+    hideAllSections();
+    setShowProductos(true);
+  };
 
   const handleCategoryClick = () => {
-    // Siempre deja showCategorias en true
+    hideAllSections();
     setShowCategorias(true);
-  
-    // Cierra las demás vistas
-    setShowProductos(false);
-    setShowIngredientes(false);
-    setShowCrearCategoria(false);
-    setShowCrearProducto(false);
-    setShowCrearIngrediente(false);
   };
-  
+
   const handleIngredienteClick = () => {
-    // Siempre deja showIngredientes en true
+    hideAllSections();
     setShowIngredientes(true);
-  
-    // Cierra las demás vistas
-    setShowProductos(false);
-    setShowCategorias(false);
-    setShowCrearCategoria(false);
-    setShowCrearProducto(false);
-    setShowCrearIngrediente(false);
   };
 
   const handleCrearCategoriaClick = () => {
+    hideAllSections();
     setShowCrearCategoria(true);
-    setShowProductos(false);
-    setShowCategorias(false);
-    setShowIngredientes(false);
-    setShowCrearProducto(false);
-    setShowCrearIngrediente(false);
   };
 
   const handleCrearProductoClick = () => {
+    hideAllSections();
     setShowCrearProducto(true);
-    setShowProductos(false);
-    setShowCategorias(false);
-    setShowIngredientes(false);
-    setShowCrearCategoria(false);
-    setShowCrearIngrediente(false);
   };
 
   const handleCrearIngredienteClick = () => {
+    hideAllSections();
     setShowCrearIngrediente(true);
-    setShowProductos(false);
-    setShowCategorias(false);
-    setShowIngredientes(false);
-    setShowCrearCategoria(false);
-    setShowCrearProducto(false);
     setIngredienteEdit(null);
+  };
+
+  const handleCrearUsuarioClick = () => {
+    hideAllSections();
+    setShowCrearUsuario(true);
   };
 
   const addCategoria = (categoria) => {
@@ -118,8 +105,6 @@ const App = () => {
 
   return (
     <div className="flex w-full">
-      {/* Navigation es fixed dentro de su propio componente,
-          así que el contenido a la derecha necesita margin-left */}
       <Navigation
         handleButtonClick={handleButtonClick}
         handleCategoryClick={handleCategoryClick}
@@ -127,25 +112,80 @@ const App = () => {
         handleCrearCategoriaClick={handleCrearCategoriaClick}
         handleCrearProductoClick={handleCrearProductoClick}
         handleCrearIngredienteClick={handleCrearIngredienteClick}
+        handleCrearUsuarioClick={handleCrearUsuarioClick}
       />
 
-      {/* Contenedor principal (lo que antes era mainContainer) */}
       <div className="ml-[200px] w-full flex-1 h-auto overflow-y-auto">
-        {/* Contenido interno (lo que antes era contentContainer) */}
         <div className="p-5">
           <h1 className="text-2xl font-bold mb-4">Mi Tienda</h1>
+          
+          {/* Panel de Opciones: botones cuadrados en una parrilla */}
+          <div className="grid grid-cols-3 gap-6 mb-6">
+            <button 
+              className="flex items-center justify-center border w-40 h-40"
+              onClick={handleButtonClick}
+            >
+              Productos
+            </button>
+            <button 
+              className="flex items-center justify-center border w-40 h-40"
+              onClick={handleCategoryClick}
+            >
+              Categorías
+            </button>
+            <button 
+              className="flex items-center justify-center border w-40 h-40"
+              onClick={handleIngredienteClick}
+            >
+              Ingredientes
+            </button>
+            <button 
+              className="flex items-center justify-center border w-40 h-40"
+              onClick={handleCrearCategoriaClick}
+            >
+              Crear Categoría
+            </button>
+            <button 
+              className="flex items-center justify-center border w-40 h-40"
+              onClick={handleCrearProductoClick}
+            >
+              Crear Producto
+            </button>
+            <button 
+              className="flex items-center justify-center border w-40 h-40"
+              onClick={handleCrearIngredienteClick}
+            >
+              Crear Ingrediente
+            </button>
+            <button 
+              className="flex items-center justify-center border w-40 h-40"
+              onClick={handleCrearUsuarioClick}
+            >
+              Crear Usuario
+            </button>
+          </div>
 
+          {/* Renderizado condicional de secciones */}
           {showProductos && (
-            <ListaProductos categorias={categorias} />
+            <div className="p-4 border">
+              <p>Contenido de Productos</p>
+              <ListaProductos categorias={categorias} />
+            </div>
           )}
           {showCategorias && (
-            <Categorias
-              categorias={categorias}
-              handleCrearCategoriaClick={handleCrearCategoriaClick}
-            />
+            <div className="p-4 border">
+              <p>Contenido de Categorías</p>
+              <Categorias
+                categorias={categorias}
+                handleCrearCategoriaClick={handleCrearCategoriaClick}
+              />
+            </div>
           )}
           {showIngredientes && (
-            <Ingredientes ingredientes={ingredientes} />
+            <div className="p-4 border">
+              <p>Contenido de Ingredientes</p>
+              <Ingredientes ingredientes={ingredientes} />
+            </div>
           )}
           {showCrearCategoria && (
             <CrearCategoriaModal
@@ -164,6 +204,14 @@ const App = () => {
               handleCloseModal={() => setShowCrearIngrediente(false)}
               ingredienteEdit={ingredienteEdit}
               addIngrediente={addIngrediente}
+            />
+          )}
+          {showCrearUsuario && (
+            <CrearUsuario 
+              handleCloseModal={() => setShowCrearUsuario(false)}
+              addUsuario={(nuevoUsuario) => {
+                console.log("Usuario creado:", nuevoUsuario);
+              }}
             />
           )}
         </div>
