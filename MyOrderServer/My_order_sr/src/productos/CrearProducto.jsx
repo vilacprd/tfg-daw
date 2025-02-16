@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { createProducto, updateProducto, fetchCategorias, fetchIngredientes, uploadImageToS3 } from '../connections';
+import {
+  createProducto,
+  updateProducto,
+  fetchCategorias,
+  fetchIngredientes,
+  uploadImageToS3
+} from '../connections';
 import { ProductoConnection } from '../models/model';
 
 const CrearProducto = ({ handleCloseModal, productoEdit }) => {
@@ -43,7 +49,9 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
       setNombre(productoEdit.nombre || '');
       setPrecio(productoEdit.precio || '');
       setDescripcion(productoEdit.descripcion || '');
-      setImagenPreview(productoEdit.imagen ? `http://localhost:3000/${productoEdit.imagen}` : null);
+      setImagenPreview(
+        productoEdit.imagen ? `http://localhost:3000/${productoEdit.imagen}` : null
+      );
       setSelectedCategorias(productoEdit.categorias || []);
       setSelectedIngredientesOriginales(productoEdit.ingredientesOriginales || []);
       setPersonalizable(productoEdit.personalizable || false);
@@ -93,7 +101,7 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
       nombre,
       parseFloat(precio),
       descripcion,
-      imagen?.name || '', // nombre del archivo
+      imagen?.name || '', // nombre del archivo en S3
       0, // cantidad
       selectedCategorias,
       selectedIngredientesOriginales,
@@ -125,6 +133,7 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
         });
         alert('Producto creado exitosamente');
       }
+      // Cierra el modal si la prop existe
       handleCloseModal && handleCloseModal();
     } catch (error) {
       console.error('Error al guardar el producto:', error);
@@ -132,129 +141,146 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full p-4">
-      <h2 className="text-xl font-bold">
-        {productoEdit ? 'Editar Producto' : 'Crear Producto'}
-      </h2>
+    // Overlay del modal
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      {/* Contenedor del modal */}
+      <div className="relative bg-white p-6 rounded-lg w-[700px] max-h-[80vh] overflow-y-auto shadow-lg">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full">
+          <h2 className="text-xl font-bold">
+            {productoEdit ? 'Editar Producto' : 'Crear Producto'}
+          </h2>
 
-      {/* Campo Nombre */}
-      <div className="flex flex-col">
-        <label className="mb-1 font-bold">Nombre:</label>
-        <input
-          type="text"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-          required
-          className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
-        />
-      </div>
+          {/* Campo Nombre */}
+          <div className="flex flex-col">
+            <label className="mb-1 font-bold">Nombre:</label>
+            <input
+              type="text"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              required
+              className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
+            />
+          </div>
 
-      {/* Campo Precio */}
-      <div className="flex flex-col">
-        <label className="mb-1 font-bold">Precio:</label>
-        <input
-          type="number"
-          value={precio}
-          onChange={(e) => setPrecio(e.target.value)}
-          required
-          className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
-        />
-      </div>
+          {/* Campo Precio */}
+          <div className="flex flex-col">
+            <label className="mb-1 font-bold">Precio:</label>
+            <input
+              type="number"
+              value={precio}
+              onChange={(e) => setPrecio(e.target.value)}
+              required
+              className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
+            />
+          </div>
 
-      {/* Descripción */}
-      <div className="flex flex-col">
-        <label className="mb-1 font-bold">Descripción:</label>
-        <textarea
-          value={descripcion}
-          onChange={(e) => setDescripcion(e.target.value)}
-          className="p-2 border border-gray-300 rounded resize-vertical focus:outline-none focus:ring-2 focus:ring-blue-200"
-        />
-      </div>
+          {/* Descripción */}
+          <div className="flex flex-col">
+            <label className="mb-1 font-bold">Descripción:</label>
+            <textarea
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+              className="p-2 border border-gray-300 rounded resize-vertical focus:outline-none focus:ring-2 focus:ring-blue-200"
+            />
+          </div>
 
-      {/* Subir Imagen */}
-      <div className="flex flex-col">
-        <label className="mb-1 font-bold">Subir Imagen:</label>
-        <input
-          type="file"
-          onChange={handleImagenChange}
-          className="p-1 border border-gray-300 rounded"
-        />
-        {imagenPreview && (
-          <img
-            src={imagenPreview}
-            alt="Vista previa"
-            className="mt-2 max-w-full max-h-[200px] rounded"
-          />
-        )}
-      </div>
-
-      {/* Categorías */}
-      <div className="flex flex-col">
-        <label className="mb-1 font-bold">Categorías:</label>
-        <div className="flex flex-col space-y-2">
-          {categorias.map((categoria, index) => (
-            <label key={index} className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={selectedCategorias.some((c) => c.id === categoria.id)}
-                onChange={() => handleCategoriaChange(categoria.nombre)}
+          {/* Subir Imagen */}
+          <div className="flex flex-col">
+            <label className="mb-1 font-bold">Subir Imagen:</label>
+            <input
+              type="file"
+              onChange={handleImagenChange}
+              className="p-1 border border-gray-300 rounded"
+            />
+            {imagenPreview && (
+              <img
+                src={imagenPreview}
+                alt="Vista previa"
+                className="mt-2 max-w-full max-h-[200px] rounded"
               />
-              {categoria.nombre}
-            </label>
-          ))}
-        </div>
-        {selectedCategorias.length === 0 && (
-          <p className="text-red-500 text-xs">Debe seleccionar al menos una categoría.</p>
-        )}
-      </div>
+            )}
+          </div>
 
-      {/* Ingredientes Originales */}
-      <div className="flex flex-col">
-        <label className="mb-1 font-bold">Ingredientes Originales:</label>
-        <div className="flex flex-col space-y-2">
-          {ingredientes.map((ingrediente, index) => (
-            <label key={index} className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={selectedIngredientesOriginales.some((i) => i.id === ingrediente.id)}
-                onChange={() => handleIngredienteChange(ingrediente.nombre)}
-              />
-              {ingrediente.nombre}
-            </label>
-          ))}
-        </div>
-      </div>
+          {/* Categorías */}
+          <div className="flex flex-col">
+            <label className="mb-1 font-bold">Categorías:</label>
+            <div className="flex flex-col space-y-2">
+              {categorias.map((categoria, index) => (
+                <label key={index} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={selectedCategorias.some((c) => c.id === categoria.id)}
+                    onChange={() => handleCategoriaChange(categoria.nombre)}
+                  />
+                  {categoria.nombre}
+                </label>
+              ))}
+            </div>
+            {selectedCategorias.length === 0 && (
+              <p className="text-red-500 text-xs">
+                Debe seleccionar al menos una categoría.
+              </p>
+            )}
+          </div>
 
-      {/* Personalizable */}
-      <div className="flex items-center gap-2">
-        <label className="font-bold">Personalizable:</label>
-        <input
-          type="checkbox"
-          checked={personalizable}
-          onChange={(e) => setPersonalizable(e.target.checked)}
-          className="w-4 h-4"
-        />
-      </div>
+          {/* Ingredientes Originales */}
+          <div className="flex flex-col">
+            <label className="mb-1 font-bold">Ingredientes Originales:</label>
+            <div className="flex flex-col space-y-2">
+              {ingredientes.map((ingrediente, index) => (
+                <label key={index} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={selectedIngredientesOriginales.some((i) => i.id === ingrediente.id)}
+                    onChange={() => handleIngredienteChange(ingrediente.nombre)}
+                  />
+                  {ingrediente.nombre}
+                </label>
+              ))}
+            </div>
+          </div>
 
-      {/* Activo */}
-      <div className="flex items-center gap-2">
-        <label className="font-bold">Activo:</label>
-        <input
-          type="checkbox"
-          checked={isActive}
-          onChange={(e) => setIsActive(e.target.checked)}
-          className="w-4 h-4"
-        />
-      </div>
+          {/* Personalizable */}
+          <div className="flex items-center gap-2">
+            <label className="font-bold">Personalizable:</label>
+            <input
+              type="checkbox"
+              checked={personalizable}
+              onChange={(e) => setPersonalizable(e.target.checked)}
+              className="w-4 h-4"
+            />
+          </div>
 
-      {/* Botón Submit */}
-      <button
-        type="submit"
-        className="px-4 py-2 bg-blue-600 text-white font-bold rounded hover:bg-blue-500 transition-colors"
-      >
-        {productoEdit ? 'Actualizar Producto' : 'Crear Producto'}
-      </button>
-    </form>
+          {/* Activo */}
+          <div className="flex items-center gap-2">
+            <label className="font-bold">Activo:</label>
+            <input
+              type="checkbox"
+              checked={isActive}
+              onChange={(e) => setIsActive(e.target.checked)}
+              className="w-4 h-4"
+            />
+          </div>
+
+          {/* Botones (Cancelar y Submit) */}
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={handleCloseModal}
+              className="px-4 py-2 border rounded"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white font-bold rounded hover:bg-blue-500 transition-colors"
+            >
+              {productoEdit ? 'Actualizar Producto' : 'Crear Producto'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
 

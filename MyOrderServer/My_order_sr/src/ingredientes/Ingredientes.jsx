@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import CrearIngredienteModal from './CrearIngredienteModal';
 
-const Ingredientes = ({ handleCrearIngredienteClick }) => {
+const Ingredientes = () => {
   const [ingredientes, setIngredientes] = useState([]);
   const [ingredienteEdit, setIngredienteEdit] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
+  // Cargar ingredientes
   const fetchIngredientes = async () => {
     try {
       const response = await axios.get('http://localhost:3000/server/ingredientes');
@@ -20,6 +21,7 @@ const Ingredientes = ({ handleCrearIngredienteClick }) => {
     fetchIngredientes();
   }, []);
 
+  // Eliminar ingrediente
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:3000/server/ingredientes/${id}`);
@@ -29,19 +31,21 @@ const Ingredientes = ({ handleCrearIngredienteClick }) => {
     }
   };
 
+  // Editar ingrediente
   const handleEdit = (ingrediente) => {
     setIngredienteEdit(ingrediente);
     setShowModal(true);
   };
 
+  // Cerrar el modal (se usará tanto para cancelar como para finalizar)
   const handleCloseModal = () => {
     setShowModal(false);
     setIngredienteEdit(null);
-    fetchIngredientes(); // Recargar lista después de crear/editar
+    // Recarga la lista después de crear/editar
+    fetchIngredientes();
   };
 
   return (
-    
     <div className="ml-[0px] p-5 max-h-screen overflow-y-auto">
       <h2 className="text-xl font-bold mb-4">Ingredientes</h2>
 
@@ -53,7 +57,7 @@ const Ingredientes = ({ handleCrearIngredienteClick }) => {
         Crear Nuevo Ingrediente
       </button>
 
-      {/* Contenedor grid */}
+      {/* Listado de ingredientes en grid */}
       <div className="grid grid-cols-3 gap-5">
         {ingredientes.map((ingrediente, index) => (
           <div
@@ -90,8 +94,8 @@ const Ingredientes = ({ handleCrearIngredienteClick }) => {
       {/* Modal para crear/editar ingrediente */}
       {showModal && (
         <CrearIngredienteModal
-          handleCloseModal={handleCloseModal}
           ingredienteEdit={ingredienteEdit}
+          handleCloseModal={handleCloseModal}
         />
       )}
     </div>
