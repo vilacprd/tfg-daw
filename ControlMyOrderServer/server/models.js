@@ -74,6 +74,30 @@ class ProductoConnection {
   }
 }
 
+const Mensaje = sequelize.define('Mensaje', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  autor: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  contenido: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+  },
+  fecha: {
+    type: DataTypes.DATE,
+    defaultValue: Sequelize.NOW,
+  },
+  leido: {   // ✅ Nuevo campo para identificar mensajes leídos o no leídos
+    type: DataTypes.BOOLEAN,
+    defaultValue: false, // 🚀 Todos los mensajes nuevos estarán sin leer
+  },
+});
+
 // **Sincronizar la base de datos y crear las tablas si no existen**
 sequelize.sync({})
   .then(() => console.log("📦 Base de datos recreada correctamente"))

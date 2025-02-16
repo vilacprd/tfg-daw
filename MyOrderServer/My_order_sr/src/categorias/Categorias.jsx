@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { fetchCategorias, deleteCategoria } from '../connections';
 import CrearCategoriaModal from './CrearCategoriaModal';
 
-const Categorias = ({ handleCrearCategoriaClick }) => {
+const Categorias = () => {
   const [categorias, setCategorias] = useState([]);
   const [categoriaEdit, setCategoriaEdit] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showActive, setShowActive] = useState(false);
 
+  // Cargar categorías al montar
   const fetchCategoriasData = async () => {
     try {
       const data = await fetchCategorias();
@@ -21,6 +22,7 @@ const Categorias = ({ handleCrearCategoriaClick }) => {
     fetchCategoriasData();
   }, []);
 
+  // Eliminar categoría
   const handleDelete = async (id) => {
     try {
       await deleteCategoria(id);
@@ -30,17 +32,20 @@ const Categorias = ({ handleCrearCategoriaClick }) => {
     }
   };
 
+  // Editar categoría
   const handleEdit = (categoria) => {
     setCategoriaEdit(categoria);
     setShowModal(true);
   };
 
+  // Cerrar modal (tras cancelar o guardar)
   const handleCloseModal = () => {
     setShowModal(false);
     setCategoriaEdit(null);
-    fetchCategoriasData(); // Recargar cambios
+    fetchCategoriasData(); // Recargar la lista para reflejar cambios
   };
 
+  // Filtrar categorías activas
   const handleCheckboxChange = () => {
     setShowActive(!showActive);
   };
@@ -53,7 +58,7 @@ const Categorias = ({ handleCrearCategoriaClick }) => {
     <div className="ml-[0px] p-5 max-h-screen overflow-y-auto">
       <h2 className="text-xl font-bold mb-4">Categorías</h2>
 
-      {/* Botón para crear nueva categoría */}
+      {/* Botón para crear nueva categoría (abre modal) */}
       <button
         onClick={() => setShowModal(true)}
         className="px-4 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-500 transition-colors mb-4"
@@ -61,7 +66,7 @@ const Categorias = ({ handleCrearCategoriaClick }) => {
         Crear Nueva Categoría
       </button>
 
-      {/* Checkbox para filtrar 'Activos' */}
+      {/* Checkbox para ver solo categorías 'Activas' */}
       <label className="flex items-center mb-4">
         <input
           type="checkbox"
@@ -72,7 +77,7 @@ const Categorias = ({ handleCrearCategoriaClick }) => {
         Activos
       </label>
 
-      {/* Contenedor en grid para mostrar categorías */}
+      {/* Listado de categorías en grid */}
       <div className="grid grid-cols-3 gap-5">
         {filteredCategorias.map((categoria, index) => (
           <div
@@ -95,7 +100,7 @@ const Categorias = ({ handleCrearCategoriaClick }) => {
               </>
             )}
 
-            {/* Condicional para el estado Activo/Inactivo */}
+            {/* Estado Activo/Inactivo */}
             <p
               className={`text-xs font-bold mt-2 ${
                 categoria.isActive ? 'text-green-600' : 'text-red-500'

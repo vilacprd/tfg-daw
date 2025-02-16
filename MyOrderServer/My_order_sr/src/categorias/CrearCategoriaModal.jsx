@@ -38,24 +38,26 @@ const CrearCategoriaModal = ({ handleCloseModal, categoriaEdit }) => {
       nombre: categoria.nombre,
       descripcion: categoria.description,
       imagen: categoria.imgCategory,
-      isActive: categoria.isActive
+      isActive: categoria.isActive,
     });
 
     console.log('Categoría a crear/actualizar:', categoriaJson);
 
     try {
       if (categoriaEdit) {
-        await axios.put(`http://localhost:3000/server/categorias/${categoriaEdit.id}`, categoriaJson, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        // Editar categoría
+        await axios.put(
+          `http://localhost:3000/server/categorias/${categoriaEdit.id}`,
+          categoriaJson,
+          {
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
         alert('Categoría actualizada exitosamente');
       } else {
+        // Crear categoría
         await axios.post('http://localhost:3000/server/categorias', categoriaJson, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
         });
         alert('Categoría creada exitosamente');
       }
@@ -70,14 +72,6 @@ const CrearCategoriaModal = ({ handleCloseModal, categoriaEdit }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       {/* Contenedor del modal */}
       <div className="relative bg-white p-6 rounded-lg w-[500px] max-h-[80vh] overflow-y-auto shadow-lg">
-        {/* Botón para cerrar (X) */}
-        <button
-          onClick={handleCloseModal}
-          className="absolute top-2 right-2 text-gray-500 text-xl hover:text-gray-700"
-        >
-          X
-        </button>
-
         <h2 className="text-xl font-bold mb-4">
           {categoriaEdit ? 'Editar Categoría' : 'Crear Nueva Categoría'}
         </h2>
@@ -133,13 +127,22 @@ const CrearCategoriaModal = ({ handleCloseModal, categoriaEdit }) => {
             />
           </div>
 
-          {/* Botón de Submit */}
-          <button
-            type="submit"
-            className="self-start px-4 py-2 rounded bg-blue-600 text-white font-bold hover:bg-blue-500 transition-colors"
-          >
-            {categoriaEdit ? 'Actualizar Categoría' : 'Añadir Categoría'}
-          </button>
+          {/* Botones para Cancelar / Guardar */}
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={handleCloseModal}
+              className="px-4 py-2 border rounded"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 rounded bg-blue-600 text-white font-bold hover:bg-blue-500 transition-colors"
+            >
+              {categoriaEdit ? 'Actualizar Categoría' : 'Añadir Categoría'}
+            </button>
+          </div>
         </form>
       </div>
     </div>
