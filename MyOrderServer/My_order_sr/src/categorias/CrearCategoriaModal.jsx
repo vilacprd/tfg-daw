@@ -9,6 +9,10 @@ const CrearCategoriaModal = ({ handleCloseModal, categoriaEdit }) => {
   const [imagenPreview, setImagenPreview] = useState(null);
   const [isActive, setIsActive] = useState(false);
 
+  // Mensajes a mostrar en el formulario
+  const [mensaje, setMensaje] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+
   useEffect(() => {
     if (categoriaEdit) {
       setNombre(categoriaEdit.nombre);
@@ -21,11 +25,14 @@ const CrearCategoriaModal = ({ handleCloseModal, categoriaEdit }) => {
   const handleImagenChange = (e) => {
     const file = e.target.files[0];
     setImagen(file);
-    setImagenPreview(URL.createObjectURL(file));
+    setImagenPreview(file ? URL.createObjectURL(file) : null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMensaje('');
+    setErrorMsg('');
+
     const categoria = new Category(
       categoriaEdit ? categoriaEdit.id : null,
       nombre,
@@ -34,47 +41,52 @@ const CrearCategoriaModal = ({ handleCloseModal, categoriaEdit }) => {
       isActive
     );
 
-    const categoriaJson = JSON.stringify({
-      nombre: categoria.nombre,
-      descripcion: categoria.description,
-      imagen: categoria.imgCategory,
-      isActive: categoria.isActive,
-    });
-
-    console.log('Categoría a crear/actualizar:', categoriaJson);
+    // FormData si subes imagen
+    const formData = new FormData();
+    formData.append('nombre', categoria.nombre);
+    formData.append('descripcion', categoria.description);
+    formData.append('isActive', categoria.isActive);
+    if (imagen) {
+      formData.append('imagen', imagen);
+    }
 
     try {
       if (categoriaEdit) {
         // Editar categoría
         await axios.put(
           `http://localhost:3000/server/categorias/${categoriaEdit.id}`,
-          categoriaJson,
-          {
-            headers: { 'Content-Type': 'application/json' },
-          }
+          formData,
+          { headers: { 'Content-Type': 'multipart/form-data' } }
         );
-        alert('Categoría actualizada exitosamente');
+        setMensaje('Categoría actualizada exitosamente.');
       } else {
         // Crear categoría
-        await axios.post('http://localhost:3000/server/categorias', categoriaJson, {
-          headers: { 'Content-Type': 'application/json' },
-        });
-        alert('Categoría creada exitosamente');
+        await axios.post(
+          'http://localhost:3000/server/categorias',
+          formData,
+          { headers: { 'Content-Type': 'multipart/form-data' } }
+        );
+        setMensaje('Categoría creada exitosamente.');
       }
-      handleCloseModal();
+      // Cerrar modal o no, según prefieras.
+      // handleCloseModal();
     } catch (error) {
       console.error('Error al guardar la categoría:', error);
+      setErrorMsg('Ocurrió un error al guardar la categoría.');
     }
   };
 
   return (
-    // Overlay oscuro (fondo)
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       {/* Contenedor del modal */}
       <div className="relative bg-white p-6 rounded-lg w-[500px] max-h-[80vh] overflow-y-auto shadow-lg">
         <h2 className="text-xl font-bold mb-4">
           {categoriaEdit ? 'Editar Categoría' : 'Crear Nueva Categoría'}
         </h2>
+
+        {/* Mensajes de éxito o error */}
+        {mensaje && <p className="text-green-600">{mensaje}</p>}
+        {errorMsg && <p className="text-red-600">{errorMsg}</p>}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* Nombre */}
