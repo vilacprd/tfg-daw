@@ -392,6 +392,100 @@ app.delete('/server/productos/:id', async (req, res) => {
   }
 });
 
+
+// ===========================
+//  ENVIAR PRODUCTOS 
+// ===========================
+app.post('/api/sendOrder', async (req, res) => {
+  try {
+    const {  total, productosShoppingList, anotaciones,  numberBoard } = req.body;
+    console.log('Productos:', req.body);
+    const orderData = {
+      fecha: new Date(),
+      total,
+      productos: JSON.stringify(productosShoppingList),
+      anotaciones,
+      estado: 'pendiente',
+      mesa: numberBoard
+    };
+    console.log('OrderData:', orderData);
+    const order = await Order.create(orderData);
+  
+    res.status(201).send("order");
+  } catch (error) {
+    console.error('Error al guardar la orden:', error);
+    res.status(500).send({ message: 'Error al guardar la orden', error });
+  }
+}
+);
+
+
+
+app.get('/api/Order', async (req, res) => {
+  try {
+    const Order = await Order.findAll();
+    res.status(200).send(Order);
+
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
+
+
+
+// ===========================
+// IMAGENES AWT S3
+// ===========================
+// Configura la región (ajústala según tus necesidades)
+AWS.config.update({ region: 'eu-north-1' });
+const S3_BUCKET = 'img-my-order';
+
+/* 
+ * Rutas para AWS S3: Generar URL pre-firmada para subir y descargar imágenes
+ */
+app.get('/s3/generateUploadUrl/productos', (req, res) => {
+  const objectKey = req.query.key; // Por ejemplo: "uploads/imagen_usuario.jpg"
+  if (!objectKey) {
+    return res.status(400).json({ error: 'Falta el parámetro "key".' });
+  }
+  const s3 = new AWS.S3();
+  const params = {
+    Bucket: S3_BUCKET,
+    Key: objectKey,
+    Expires: 900, // URL válida por 15 minutos (900 segundos)
+    // Se puede especificar el Content-Type, por ejemplo, 'image/jpeg'
+    ContentType: req.query.contentType || 'image/jpeg'
+  };
+  s3.getSignedUrl('putObject', params, (err, url) => {
+    if (err) {
+      console.error('Error generando la URL de subida:', err);
+      return res.status(500).json({ error: 'Error generando la URL de subida' });
+    }
+    res.json({ uploadUrl: url });
+  });
+});
+
+app.get('/s3/generateDownloadUrl/productos', (req, res) => {
+  const objectKey = req.query.key; // Por ejemplo: "uploads/imagen_usuario.jpg"
+  if (!objectKey) {
+    return res.status(400).json({ error: 'Falta el parámetro "key".' });
+  }
+  console.log("Key:", objectKey);
+  const s3 = new AWS.S3();
+  const params = {
+    Bucket: S3_BUCKET,
+    Key: objectKey,
+    Expires: 900 // URL válida por 15 minutos
+  };
+  s3.getSignedUrl('getObject', params, (err, url) => {
+    if (err) {
+      console.error('Error generando la URL de descarga:', err);
+      return res.status(500).json({ error: 'Error generando la URL de descarga' });
+    }
+    res.json({ downloadUrl: url });
+  });
+});
 // ===========================
 //  ARRANCAR EL SERVIDOR
 // ===========================

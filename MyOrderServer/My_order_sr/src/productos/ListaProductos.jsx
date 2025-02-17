@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { fetchProductos, deleteProducto } from '../connections';
+import { fetchProductos, deleteProducto,fetchCategorias } from '../connections';
 import CrearProductoModal from './CrearProductoModal';
 import Producto from './Producto';
 
-const ListaProductos = ({ categorias }) => {
+const ListaProductos = () => {
   const [showModal, setShowModal] = useState(false);
   const [productos, setProductos] = useState([]);
   const [productoEdit, setProductoEdit] = useState(null);
   const [selectedCategoria, setSelectedCategoria] = useState('');
   const [isActive, setIsActive] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+const [categorias,setCategorias]=useState ([]);
 
   useEffect(() => {
+    fetchCategoriasData();
     fetchProductosData();
   }, []);
 
@@ -24,7 +26,15 @@ const ListaProductos = ({ categorias }) => {
       console.error('Error al cargar los productos:', error);
     }
   };
-
+  const fetchCategoriasData = async () => { 
+    try {
+      const data = await fetchCategorias();
+      setCategorias(data);
+      console.log('Lista de categorias:', data);
+    } catch (error) {
+      console.error('Error al cargar las categorías:', error);
+    }
+  };
   const handleAgregarProductoClick = () => {
     setProductoEdit(null);
     setShowModal(true);

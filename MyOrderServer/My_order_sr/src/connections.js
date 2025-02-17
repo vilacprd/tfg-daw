@@ -178,7 +178,6 @@ export const uploadImageToS3 = async (file) => {
 
   export const obtenerUrlDeImagen = async (key) => {
     try {
-      console.log('Key:', key)
       const response = await fetch(`http://localhost:3000/s3/generateDownloadUrl?key=${key}`);
       const data = await response.json();
       return data.downloadUrl;

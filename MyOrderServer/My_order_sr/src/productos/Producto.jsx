@@ -5,9 +5,6 @@ const Producto = ({ producto, handleDelete, handleEdit }) => {
   let categorias = [];
   let ingredientesOriginales = [];
 
-  console.log('Producto 05 linea', producto.ingredientesOriginales);
-  console.log('Producto 05 linea', producto.categorias);
-
   try {
     if (producto.categorias) {
       categorias = producto.categorias.map((categoria) => categoria.nombre);
@@ -26,7 +23,6 @@ const Producto = ({ producto, handleDelete, handleEdit }) => {
       console.log('err', producto.ingredientesOriginales);
     }
   } catch (error) {
-    console.log('err', producto.categorias);
     console.error('Error al manejar las categorías o ingredientes:', error);
   }
 
