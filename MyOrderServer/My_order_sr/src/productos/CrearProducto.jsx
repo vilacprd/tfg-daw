@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
-  createProducto,
-  updateProducto,
   fetchCategorias,
-  fetchIngredientes,
-  uploadImageToS3
+  fetchIngredientes
+  // ...
 } from '../connections';
 import { ProductoConnection } from '../models/model';
 
@@ -21,27 +20,25 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
   const [categorias, setCategorias] = useState([]);
   const [ingredientes, setIngredientes] = useState([]);
 
+  // Mensajes
+  const [mensaje, setMensaje] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+
   useEffect(() => {
-    const fetchCategoriasData = async () => {
+    // Cargar categorías e ingredientes
+    const fetchData = async () => {
       try {
-        const data = await fetchCategorias();
-        setCategorias(data);
+        const catData = await fetchCategorias();
+        setCategorias(catData);
+
+        const ingData = await fetchIngredientes();
+        setIngredientes(ingData);
       } catch (error) {
-        console.error('Error al cargar las categorías:', error);
+        console.error('Error al cargar datos:', error);
+        setErrorMsg('No se pudieron cargar categorías o ingredientes.');
       }
     };
-
-    const fetchIngredientesData = async () => {
-      try {
-        const data = await fetchIngredientes();
-        setIngredientes(data);
-      } catch (error) {
-        console.error('Error al cargar los ingredientes:', error);
-      }
-    };
-
-    fetchCategoriasData();
-    fetchIngredientesData();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -49,9 +46,9 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
       setNombre(productoEdit.nombre || '');
       setPrecio(productoEdit.precio || '');
       setDescripcion(productoEdit.descripcion || '');
-      setImagenPreview(
-        productoEdit.imagen ? `http://localhost:3000/${productoEdit.imagen}` : null
-      );
+      if (productoEdit.imagen) {
+        setImagenPreview(`http://localhost:3000/${productoEdit.imagen}`);
+      }
       setSelectedCategorias(productoEdit.categorias || []);
       setSelectedIngredientesOriginales(productoEdit.ingredientesOriginales || []);
       setPersonalizable(productoEdit.personalizable || false);
@@ -60,117 +57,124 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
   }, [productoEdit]);
 
   const handleCategoriaChange = (categoria) => {
-    const categoriaObj = categorias.find((c) => c.nombre === categoria);
-    setSelectedCategorias((prevState) =>
-      prevState.some((c) => c.id === categoriaObj.id)
-        ? prevState.filter((c) => c.id !== categoriaObj.id)
-        : [...prevState, categoriaObj]
+    setSelectedCategorias((prev) =>
+      prev.includes(categoria)
+        ? prev.filter((cat) => cat !== categoria)
+        : [...prev, categoria]
     );
   };
 
   const handleIngredienteChange = (ingrediente) => {
-    const ingredienteObj = ingredientes.find((i) => i.nombre === ingrediente);
-    setSelectedIngredientesOriginales((prevState) =>
-      prevState.some((i) => i.id === ingredienteObj.id)
-        ? prevState.filter((i) => i.id !== ingredienteObj.id)
-        : [...prevState, ingredienteObj]
+    setSelectedIngredientesOriginales((prev) =>
+      prev.includes(ingrediente)
+        ? prev.filter((ing) => ing !== ingrediente)
+        : [...prev, ingrediente]
     );
   };
 
   const handleImagenChange = (e) => {
     const file = e.target.files[0];
     setImagen(file);
-    setImagenPreview(URL.createObjectURL(file));
+    setImagenPreview(file ? URL.createObjectURL(file) : null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMensaje('');
+    setErrorMsg('');
+
     if (!nombre || !precio || selectedCategorias.length === 0) {
-      alert('Por favor, complete todos los campos obligatorios.');
+      setErrorMsg('Por favor, complete los campos obligatorios.');
       return;
     }
 
-    // Subir imagen a S3 (si existe)
-    if (imagen) {
-      await uploadImageToS3(imagen);
-    }
-
-    // Construir el objeto Producto
+    // Construir el objeto en base a la clase, si quieres
     const producto = new ProductoConnection(
       productoEdit ? productoEdit.id : null,
       nombre,
       parseFloat(precio),
       descripcion,
-      imagen?.name || '', // nombre del archivo en S3
+      imagen?.name || '',
       0, // cantidad
       selectedCategorias,
       selectedIngredientesOriginales,
-      [], // ingredientesExtras
+      [],
       personalizable,
       isActive
     );
 
-    const productoJson = JSON.stringify({
-      nombre: producto.nombre,
-      precio: producto.precio,
-      descripcion: producto.descripcion,
-      imagen: producto.imagen, // nombre del archivo
-      categorias: producto.categorias,
-      ingredientesOriginales: producto.ingredientesOriginales,
-      personalizable: producto.isPersonalizable,
-      isActive: producto.isActived
-    });
+    // Enviar con FormData
+    const formData = new FormData();
+    formData.append('nombre', producto.nombre);
+    formData.append('precio', producto.precio);
+    formData.append('descripcion', producto.descripcion);
+    formData.append('personalizable', producto.isPersonalizable);
+    formData.append('isActive', producto.isActived);
+    // Convertir arrays a JSON
+    formData.append('categorias', JSON.stringify(producto.categorias));
+    formData.append('ingredientesOriginales', JSON.stringify(producto.ingredientesOriginales));
+    if (imagen) {
+      formData.append('imagen', imagen);
+    }
 
     try {
       if (productoEdit) {
-        await updateProducto(productoEdit.id, productoJson, {
-          headers: { 'Content-Type': 'application/json' },
-        });
-        alert('Producto actualizado exitosamente');
+        // Editar producto
+        await axios.put(
+          `http://localhost:3000/server/productos/${productoEdit.id}`,
+          formData,
+          { headers: { 'Content-Type': 'multipart/form-data' } }
+        );
+        setMensaje('Producto actualizado exitosamente.');
       } else {
-        await createProducto(productoJson, {
-          headers: { 'Content-Type': 'application/json' },
-        });
-        alert('Producto creado exitosamente');
+        // Crear producto
+        await axios.post(
+          'http://localhost:3000/server/productos',
+          formData,
+          { headers: { 'Content-Type': 'multipart/form-data' } }
+        );
+        setMensaje('Producto creado exitosamente.');
       }
-      // Cierra el modal si la prop existe
-      handleCloseModal && handleCloseModal();
+      // handleCloseModal();
     } catch (error) {
       console.error('Error al guardar el producto:', error);
+      setErrorMsg('Ocurrió un error al guardar el producto.');
     }
   };
 
   return (
-    // Overlay del modal
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      {/* Contenedor del modal */}
       <div className="relative bg-white p-6 rounded-lg w-[700px] max-h-[80vh] overflow-y-auto shadow-lg">
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full">
           <h2 className="text-xl font-bold">
             {productoEdit ? 'Editar Producto' : 'Crear Producto'}
           </h2>
 
+          {/* Mensajes de éxito / error */}
+          {mensaje && <p className="text-green-600">{mensaje}</p>}
+          {errorMsg && <p className="text-red-600">{errorMsg}</p>}
+
           {/* Campo Nombre */}
           <div className="flex flex-col">
-            <label className="mb-1 font-bold">Nombre:</label>
+            <label className="mb-1 font-bold">Nombre (obligatorio):</label>
             <input
               type="text"
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               required
-              className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="p-2 border border-gray-300 rounded"
             />
           </div>
 
           {/* Campo Precio */}
           <div className="flex flex-col">
-            <label className="mb-1 font-bold">Precio:</label>
+            <label className="mb-1 font-bold">Precio (obligatorio):</label>
             <input
               type="number"
               value={precio}
               onChange={(e) => setPrecio(e.target.value)}
               required
-              className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="p-2 border border-gray-300 rounded"
             />
           </div>
 
@@ -180,13 +184,13 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
             <textarea
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
-              className="p-2 border border-gray-300 rounded resize-vertical focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="p-2 border border-gray-300 rounded resize-vertical"
             />
           </div>
 
           {/* Subir Imagen */}
           <div className="flex flex-col">
-            <label className="mb-1 font-bold">Subir Imagen:</label>
+            <label className="mb-1 font-bold">Subir Imagen (opcional):</label>
             <input
               type="file"
               onChange={handleImagenChange}
@@ -203,38 +207,33 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
 
           {/* Categorías */}
           <div className="flex flex-col">
-            <label className="mb-1 font-bold">Categorías:</label>
+            <label className="mb-1 font-bold">Categorías (obligatorio al menos 1):</label>
             <div className="flex flex-col space-y-2">
-              {categorias.map((categoria, index) => (
-                <label key={index} className="flex items-center gap-2 text-sm">
+              {categorias.map((cat) => (
+                <label key={cat.id} className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
-                    checked={selectedCategorias.some((c) => c.id === categoria.id)}
-                    onChange={() => handleCategoriaChange(categoria.nombre)}
+                    checked={selectedCategorias.includes(cat.nombre)}
+                    onChange={() => handleCategoriaChange(cat.nombre)}
                   />
-                  {categoria.nombre}
+                  {cat.nombre}
                 </label>
               ))}
             </div>
-            {selectedCategorias.length === 0 && (
-              <p className="text-red-500 text-xs">
-                Debe seleccionar al menos una categoría.
-              </p>
-            )}
           </div>
 
           {/* Ingredientes Originales */}
           <div className="flex flex-col">
             <label className="mb-1 font-bold">Ingredientes Originales:</label>
             <div className="flex flex-col space-y-2">
-              {ingredientes.map((ingrediente, index) => (
-                <label key={index} className="flex items-center gap-2 text-sm">
+              {ingredientes.map((ing) => (
+                <label key={ing.id} className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
-                    checked={selectedIngredientesOriginales.some((i) => i.id === ingrediente.id)}
-                    onChange={() => handleIngredienteChange(ingrediente.nombre)}
+                    checked={selectedIngredientesOriginales.includes(ing.nombre)}
+                    onChange={() => handleIngredienteChange(ing.nombre)}
                   />
-                  {ingrediente.nombre}
+                  {ing.nombre}
                 </label>
               ))}
             </div>
@@ -262,7 +261,6 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
             />
           </div>
 
-          {/* Botones (Cancelar y Submit) */}
           <div className="flex justify-end gap-2">
             <button
               type="button"
