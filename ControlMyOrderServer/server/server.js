@@ -90,6 +90,32 @@ const IngredienteModel = sequelize.define('Ingrediente', {
   },
 });
 
+// Modelo de Order
+const Order = sequelize.define('Order', {
+  fecha: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+  total: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+  },
+  productos: {
+    type: DataTypes.TEXT,
+  },
+  anotacion: {
+    type: DataTypes.STRING,
+  },
+  estado: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  mesa: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+});
+
 // Sincronizar base de datos
 sequelize.sync().then(() => { // Elimina { force: true }
   console.log('Base de datos sincronizada');
@@ -119,6 +145,7 @@ app.post('/server/productos', async (req, res) => {
       isActive
     };
     const product = await Product.create(productData);
+    console.log('Producto guardado:', product);
     res.status(201).send(product);
   } catch (error) {
     console.error('Error al guardar el producto:', error); // Agrega esta línea para registrar el error
@@ -394,6 +421,48 @@ app.get('/api/categorias', async (req, res) => {
     res.status(500).send(error);
   }
 });
+
+/*
+ *
+ *  Order API
+ * 
+ */
+app.post('/api/sendOrder', async (req, res) => {
+  try {
+    const {  total, productosShoppingList, anotaciones,  numberBoard } = req.body;
+    console.log('Productos:', req.body);
+    const orderData = {
+      fecha: new Date(),
+      total,
+      productos: JSON.stringify(productosShoppingList),
+      anotaciones,
+      estado: 'pendiente',
+      mesa: numberBoard
+    };
+    console.log('OrderData:', orderData);
+    const order = await Order.create(orderData);
+  
+    res.status(201).send("order");
+  } catch (error) {
+    console.error('Error al guardar la orden:', error);
+    res.status(500).send({ message: 'Error al guardar la orden', error });
+  }
+}
+);
+
+
+
+app.get('/api/Order', async (req, res) => {
+  try {
+    const Order = await Order.findAll();
+    res.status(200).send(Order);
+
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
+
 
 // IMAGENES AWT S3
 
