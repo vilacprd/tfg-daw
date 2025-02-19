@@ -101,9 +101,10 @@ const Order = sequelize.define('Order', {
     allowNull: false,
   },
   productos: {
-    type: DataTypes.TEXT,
+    type: DataTypes.ARRAY(DataTypes.JSON),
+    allowNull: false,
   },
-  anotacion: {
+  anotaciones: {
     type: DataTypes.STRING,
   },
   estado: {
@@ -434,7 +435,7 @@ app.post('/api/sendOrder', async (req, res) => {
     const orderData = {
       fecha: new Date(),
       total,
-      productos: JSON.stringify(productosShoppingList),
+      productos: productosShoppingList,
       anotaciones,
       estado: 'pendiente',
       mesa: numberBoard
@@ -442,7 +443,7 @@ app.post('/api/sendOrder', async (req, res) => {
     console.log('OrderData:', orderData);
     const order = await Order.create(orderData);
   
-    res.status(201).send("order");
+    res.status(201).send("Enviado correctamente");
   } catch (error) {
     console.error('Error al guardar la orden:', error);
     res.status(500).send({ message: 'Error al guardar la orden', error });
@@ -452,10 +453,10 @@ app.post('/api/sendOrder', async (req, res) => {
 
 
 
-app.get('/api/Order', async (req, res) => {
+app.get('/server/getOrder', async (req, res) => {
   try {
-    const Order = await Order.findAll();
-    res.status(200).send(Order);
+    const orderObjet = await Order.findAll();
+    res.status(200).send(orderObjet);
 
   } catch (error) {
     res.status(500).send(error);
