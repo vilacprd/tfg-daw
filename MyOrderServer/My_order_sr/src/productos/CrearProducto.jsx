@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import {
-  fetchCategorias,
-  fetchIngredientes
-  // ...
-} from '../connections';
-import { ProductoConnection } from '../models/model';
+import { fetchCategorias, fetchIngredientes } from '../connections';
 
 const CrearProducto = ({ handleCloseModal, productoEdit }) => {
   const [nombre, setNombre] = useState('');
@@ -25,12 +20,10 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    // Cargar categorías e ingredientes
     const fetchData = async () => {
       try {
         const catData = await fetchCategorias();
         setCategorias(catData);
-
         const ingData = await fetchIngredientes();
         setIngredientes(ingData);
       } catch (error) {
@@ -49,29 +42,42 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
       if (productoEdit.imagen) {
         setImagenPreview(`http://localhost:3000/${productoEdit.imagen}`);
       }
-      setSelectedCategorias(productoEdit.categorias || []);
-      setSelectedIngredientesOriginales(productoEdit.ingredientesOriginales || []);
+      
+      // Para Categorías (revisa ambas variantes: minúsculas y mayúsculas)
+      const categoriasEdit = productoEdit.categorias || productoEdit.Categorias || [];
+      setSelectedCategorias(
+        categoriasEdit.map(cat => typeof cat === 'object' ? cat.id : cat)
+      );
+  
+      // Para Ingredientes (revisa ambas variantes)
+      const ingredientesEdit = productoEdit.ingredientes || productoEdit.Ingredientes || [];
+      setSelectedIngredientesOriginales(
+        ingredientesEdit.map(ing => typeof ing === 'object' ? ing.id : ing)
+      );
+  
       setPersonalizable(productoEdit.personalizable || false);
       setIsActive(productoEdit.isActive || false);
     }
   }, [productoEdit]);
+  
 
-  const handleCategoriaChange = (categoria) => {
+  const handleCategoriaChange = (categoriaId) => {
     setSelectedCategorias((prev) =>
-      prev.includes(categoria)
-        ? prev.filter((cat) => cat !== categoria)
-        : [...prev, categoria]
+      prev.includes(categoriaId)
+        ? prev.filter((id) => cat !== categoriaId)
+        : [...prev, categoriaId]
     );
   };
 
-  const handleIngredienteChange = (ingrediente) => {
+  const handleIngredienteChange = (ingredienteId) => {
     setSelectedIngredientesOriginales((prev) =>
-      prev.includes(ingrediente)
-        ? prev.filter((ing) => ing !== ingrediente)
-        : [...prev, ingrediente]
+      prev.includes(ingredienteId)
+        ? prev.filter((id) => id !== ingredienteId)
+        : [...prev, ingredienteId]
     );
   };
-
+ 
+  
   const handleImagenChange = (e) => {
     const file = e.target.files[0];
     setImagen(file);
@@ -88,54 +94,32 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
       return;
     }
 
-    // Construir el objeto en base a la clase, si quieres
-    const producto = new ProductoConnection(
-      productoEdit ? productoEdit.id : null,
-      nombre,
-      parseFloat(precio),
-      descripcion,
-      imagen?.name || '',
-      0, // cantidad
-      selectedCategorias,
-      selectedIngredientesOriginales,
-      [],
-      personalizable,
-      isActive
-    );
-
-    // Enviar con FormData
+    // Construir FormData a partir de los valores de estado
     const formData = new FormData();
-    formData.append('nombre', producto.nombre);
-    formData.append('precio', producto.precio);
-    formData.append('descripcion', producto.descripcion);
-    formData.append('personalizable', producto.isPersonalizable);
-    formData.append('isActive', producto.isActived);
-    // Convertir arrays a JSON
-    formData.append('categorias', JSON.stringify(producto.categorias));
-    formData.append('ingredientesOriginales', JSON.stringify(producto.ingredientesOriginales));
+    formData.append('nombre', nombre);
+    formData.append('precio', parseFloat(precio));
+    formData.append('descripcion', descripcion);
+    formData.append('personalizable', personalizable);
+    formData.append('isActive', isActive);
+    formData.append('categorias', JSON.stringify(selectedCategorias));
+    formData.append('ingredientes', JSON.stringify(selectedIngredientesOriginales));
     if (imagen) {
       formData.append('imagen', imagen);
     }
 
     try {
       if (productoEdit) {
-        // Editar producto
-        await axios.put(
-          `http://localhost:3000/server/productos/${productoEdit.id}`,
-          formData,
-          { headers: { 'Content-Type': 'multipart/form-data' } }
-        );
+        await axios.put(`http://localhost:3000/server/productos/${productoEdit.id}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
         setMensaje('Producto actualizado exitosamente.');
       } else {
-        // Crear producto
-        await axios.post(
-          'http://localhost:3000/server/productos',
-          formData,
-          { headers: { 'Content-Type': 'multipart/form-data' } }
-        );
+        await axios.post('http://localhost:3000/server/productos', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
         setMensaje('Producto creado exitosamente.');
       }
-      // handleCloseModal();
+      // Opcional: handleCloseModal();
     } catch (error) {
       console.error('Error al guardar el producto:', error);
       setErrorMsg('Ocurrió un error al guardar el producto.');
@@ -144,13 +128,13 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-6 rounded-lg w-[700px] max-h-[80vh] overflow-y-auto shadow-lg">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full">
+      {/* Contenedor ampliado con scroll si es necesario */}
+      <div className="relative bg-white p-6 rounded-lg w-[900px] h-[80vh] overflow-y-auto shadow-lg">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full h-full">
           <h2 className="text-xl font-bold">
             {productoEdit ? 'Editar Producto' : 'Crear Producto'}
           </h2>
 
-          {/* Mensajes de éxito / error */}
           {mensaje && <p className="text-green-600">{mensaje}</p>}
           {errorMsg && <p className="text-red-600">{errorMsg}</p>}
 
@@ -213,8 +197,8 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
                 <label key={cat.id} className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
-                    checked={selectedCategorias.includes(cat.nombre)}
-                    onChange={() => handleCategoriaChange(cat.nombre)}
+                    checked={selectedCategorias.includes(cat.id)}
+                    onChange={() => handleCategoriaChange(cat.id)}
                   />
                   {cat.nombre}
                 </label>
@@ -230,8 +214,8 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
                 <label key={ing.id} className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
-                    checked={selectedIngredientesOriginales.includes(ing.nombre)}
-                    onChange={() => handleIngredienteChange(ing.nombre)}
+                    checked={selectedIngredientesOriginales.includes(ing.id)}
+                    onChange={() => handleIngredienteChange(ing.id)}
                   />
                   {ing.nombre}
                 </label>
@@ -261,7 +245,8 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
             />
           </div>
 
-          <div className="flex justify-end gap-2">
+          {/* Botones */}
+          <div className="flex justify-end gap-2 mt-auto">
             <button
               type="button"
               onClick={handleCloseModal}

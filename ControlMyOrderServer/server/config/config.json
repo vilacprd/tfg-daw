@@ -3,21 +3,24 @@
     "username": "root",
     "password": null,
     "database": "database_development",
+    "storage": "./database_development.sqlite",
     "host": "127.0.0.1",
-    "dialect": "mysql"
+    "dialect": "sqlite"
   },
   "test": {
     "username": "root",
     "password": null,
     "database": "database_test",
+    "storage": "./database_development.sqlite",
     "host": "127.0.0.1",
-    "dialect": "mysql"
+    "dialect": "sqlite"
   },
   "production": {
     "username": "root",
     "password": null,
     "database": "database_production",
+    "storage": "./database_development.sqlite",
     "host": "127.0.0.1",
-    "dialect": "mysql"
+    "dialect": "sqlite"
   }
 }

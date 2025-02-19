@@ -2,31 +2,31 @@ import React from 'react';
 import Imagen from './imagen';
 
 const Producto = ({ producto, handleDelete, handleEdit }) => {
-  let categorias = [];
-  let ingredientesOriginales = [];
+  // Verificamos ambas variantes: minúscula y mayúscula
+  const categoriasData = producto.categorias || producto.Categorias || [];
+  const ingredientesData = producto.ingredientes || producto.Ingredientes || [];
 
-  console.log('Producto 05 linea', producto.ingredientesOriginales);
-  console.log('Producto 05 linea', producto.categorias);
+  let categorias = [];
+  let ingredientes = [];
+
+  console.log('Datos Categorías:', categoriasData);
+  console.log('Datos Ingredientes:', ingredientesData);
 
   try {
-    if (producto.categorias) {
-      categorias = producto.categorias.map((categoria) => categoria.nombre);
-      console.log('ok', producto.categorias);
+    if (Array.isArray(categoriasData) && categoriasData.length > 0) {
+      categorias = categoriasData.map((categoria) => categoria.nombre);
+      console.log('Categorías procesadas:', categorias);
     } else {
-      console.log('err', producto.categorias);
+      console.log('No se encontraron categorías en el producto.');
     }
 
-    if (producto.ingredientesOriginales) {
-      ingredientesOriginales =
-        typeof producto.ingredientesOriginales === 'string'
-          ? JSON.parse(producto.ingredientesOriginales)
-          : producto.ingredientesOriginales;
-      console.log('ok', ingredientesOriginales);
+    if (Array.isArray(ingredientesData) && ingredientesData.length > 0) {
+      ingredientes = ingredientesData; // Directamente usamos los objetos
+      console.log('Ingredientes procesados:', ingredientes);
     } else {
-      console.log('err', producto.ingredientesOriginales);
+      console.log('No se encontraron ingredientes en el producto.');
     }
   } catch (error) {
-    console.log('err', producto.categorias);
     console.error('Error al manejar las categorías o ingredientes:', error);
   }
 
@@ -51,10 +51,14 @@ const Producto = ({ producto, handleDelete, handleEdit }) => {
         <p className="text-xs">{producto.descripcion}</p>
       </div>
 
-      {/* Ingredientes Originales */}
+      {/* Ingredientes */}
       <div className="mb-2">
-        <p className="text-xs font-bold">Ingredientes Originales:</p>
-        <p className="text-xs">{ingredientesOriginales.map((ing) => ing.nombre).join(', ')}</p>
+        <p className="text-xs font-bold">Ingredientes:</p>
+        <p className="text-xs">
+          {ingredientes.length > 0
+            ? ingredientes.map((ing) => ing.nombre).join(', ')
+            : 'No especificados'}
+        </p>
       </div>
 
       {/* Info de Categorías y Personalizable */}
@@ -62,7 +66,9 @@ const Producto = ({ producto, handleDelete, handleEdit }) => {
         {/* Categorías */}
         <div className="flex flex-col bg-gray-50 p-2 rounded mr-1 w-1/2">
           <p className="text-xs font-bold">Categorías:</p>
-          <p className="text-xs">{categorias.join(', ')}</p>
+          <p className="text-xs">
+            {categorias.length > 0 ? categorias.join(', ') : 'No especificadas'}
+          </p>
         </div>
         {/* Personalizable */}
         <div className="flex flex-col bg-gray-50 p-2 rounded w-1/2">

@@ -1,7 +1,7 @@
 import React from 'react';
 import CrearProducto from './CrearProducto';
 
-const CrearProductoModal = ({ handleCloseModal, categorias, productoEdit }) => {
+const CrearProductoModal = ({ handleCloseModal, categorias, productoEdit, onGuardar }) => {
   return (
     // Overlay oscuro (fondo)
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -20,6 +20,7 @@ const CrearProductoModal = ({ handleCloseModal, categorias, productoEdit }) => {
           categorias={categorias}
           productoEdit={productoEdit}
           handleCloseModal={handleCloseModal}
+          onGuardar={onGuardar}
         />
       </div>
     </div>

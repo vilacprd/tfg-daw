@@ -74,7 +74,7 @@ const Categorias = () => {
           onChange={handleCheckboxChange}
           className="mr-2"
         />
-        Activos
+        Activas
       </label>
 
       {/* Listado de categorías en grid */}
@@ -93,7 +93,7 @@ const Categorias = () => {
               <>
                 <p className="text-xs font-bold">Imagen:</p>
                 <img
-                  src={`http://localhost:3000/${categoria.imagen}`}
+                  src={`http://localhost:3000/uploads/${categoria.imagen}`}
                   alt={categoria.nombre}
                   className="mt-2 max-w-full max-h-24 rounded"
                 />

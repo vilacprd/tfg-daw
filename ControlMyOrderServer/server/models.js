@@ -5,20 +5,29 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
-// Obtener la ruta del directorio actual
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// **Conectar a SQLite con Sequelize**
+// === Conexión Sequelize con SQLite ===
 const sequelize = new Sequelize({
   dialect: 'sqlite',
   storage: path.join(__dirname, 'database.sqlite'),
-  logging: false, // Desactiva logs en consola, si prefieres
+  logging: false, 
 });
+
+/*
+  TABLAS QUE DESEAS MANTENER:
+  - Categoria      (tabla exacta: "Categoria")
+  - Ingredientes   (tabla exacta: "Ingredientes")
+  - Mensajes       (tabla exacta: "Mensajes")
+  - Products       (tabla exacta: "Products")
+  - usuarios       (tabla exacta: "usuarios")
+*/
 
 // =====================
 //   Modelo Usuario
-// =====================
+//   Mapea a la tabla "usuarios"
+
 const Usuario = sequelize.define('Usuario', {
   id: {
     type: DataTypes.INTEGER,
@@ -39,43 +48,15 @@ const Usuario = sequelize.define('Usuario', {
     defaultValue: 'camarero',
   },
 }, {
+  tableName: 'usuarios', // Usa la tabla ya existente
   timestamps: false,
 });
 
 // =====================
-//   Modelo Ingrediente
-// =====================
-const Ingrediente = sequelize.define('Ingrediente', {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-  },
-  nombre: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  cantidad: {
-    type: DataTypes.FLOAT,
-    defaultValue: 0,
-  },
-  type: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  // Si subes imágenes y guardas el nombre del archivo
-  imagen: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-}, {
-  timestamps: false,
-});
+//   Modelo Categoria
+//   Mapea a la tabla "Categoria"
 
-// =====================
-//   Modelo Category
-// =====================
-const Category = sequelize.define('Category', {
+const Categoria = sequelize.define('Categoria', {  
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -98,13 +79,75 @@ const Category = sequelize.define('Category', {
     defaultValue: true,
   },
 }, {
+  tableName: 'Categoria',
+   freezeTableName: true,
   timestamps: false,
 });
 
-// ===============================
-//   Modelo ProductoConnection
-// ===============================
-const ProductoConnection = sequelize.define('ProductoConnection', {
+// =====================
+//   Modelo Ingrediente
+//   Mapea a la tabla "Ingredientes"
+const Ingrediente = sequelize.define('Ingrediente', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  nombre: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  cantidad: {
+    type: DataTypes.FLOAT,
+    defaultValue: 0,
+  },
+  type: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  imagen: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+}, {
+  tableName: 'Ingredientes', // Usa la tabla "Ingredientes"
+  timestamps: false,
+});
+
+// =====================
+//   Modelo Mensaje
+//   Mapea a la tabla "Mensajes"
+const Mensaje = sequelize.define('Mensaje', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  autor: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  contenido: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+  },
+  fecha: {
+    type: DataTypes.DATE,
+    defaultValue: Sequelize.NOW,
+  },
+  leido: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+}, {
+  tableName: 'Mensajes', // Usa la tabla "Mensajes"
+  timestamps: false,
+});
+
+// =====================
+//   Modelo Producto
+//   Mapea a la tabla "Products"
+const Producto = sequelize.define('Producto', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -135,41 +178,53 @@ const ProductoConnection = sequelize.define('ProductoConnection', {
     defaultValue: true,
   },
 }, {
+  tableName: 'Products', // Usa la tabla "Products"
   timestamps: false,
 });
 
 // =====================
-//   Modelo Mensaje
+//   Asociaciones (Muchos a Muchos)
 // =====================
-const Mensaje = sequelize.define('Mensaje', {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-  },
-  autor: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  contenido: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-  },
-  fecha: {
-    type: DataTypes.DATE,
-    defaultValue: Sequelize.NOW,
-  },
-  leido: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
-  },
-}, {
-  timestamps: false,
+
+// Asociación Producto - Categoria
+Producto.belongsToMany(Categoria, {
+  through: 'ProductoCategoria',
+  as: 'categorias', // Alias para que se genere getCategorias, setCategorias, etc.
+  foreignKey: 'productoId',
+  otherKey: 'categoriaId'
+});
+Categoria.belongsToMany(Producto, {
+  through: 'ProductoCategoria',
+  as: 'productos', // Alias para el otro lado (opcional)
+  foreignKey: 'categoriaId',
+  otherKey: 'productoId'
 });
 
-// ==================================
+// Asociación Producto - Ingrediente
+Producto.belongsToMany(Ingrediente, {
+  through: 'ProductoIngrediente',
+  as: 'ingredientes',
+  foreignKey: {
+    name: 'productoId',
+    unique: false, // Asegura que no se establezca un índice único en este campo
+  },
+  otherKey: 'ingredienteId'
+});
+Ingrediente.belongsToMany(Producto, {
+  through: 'ProductoIngrediente',
+  as: 'productos',
+  foreignKey: {
+    name: 'ingredienteId',
+    unique: false,
+  },
+  otherKey: 'productoId'
+});
+
+
+// =====================
 //   Clases JavaScript (opcional)
-// ==================================
+// =====================
+
 class IngredienteClass {
   constructor(id, nombre, cantidad, type) {
     this.id = id;
@@ -189,7 +244,7 @@ class CategoryClass {
   }
 }
 
-class ProductoConnectionClass {
+class ProductoClass {
   constructor(
     id,
     nombre,
@@ -217,21 +272,25 @@ class ProductoConnectionClass {
   }
 }
 
-// **Sincronizar la base de datos y crear las tablas si no existen**
-sequelize.sync({alter: true})
-  .then(() => console.log("📦 Base de datos recreada / actualizada correctamente"))
-  .catch((err) => console.error("❌ Error al sincronizar la base de datos:", err));
+// =====================
+//   Sincronizar DB
+// =====================
+//sequelize.sync({ force: true })
+//  .then(() => console.log("📦 Base de datos sincronizada correctamente"))
+// .catch((err) => console.error("❌ Error al sincronizar la BD:", err));
 
-// **Exportar todos los modelos y (opcional) las clases**
+// =====================
+//   Exportar
+// =====================
 export {
   sequelize,
   Usuario,
-  Ingrediente,         // Modelo Sequelize (Ingrediente.create(...))
-  Category,            // Modelo Sequelize (Category.create(...))
-  ProductoConnection,  // Modelo Sequelize (ProductoConnection.create(...))
+  Categoria,
+  Ingrediente,
   Mensaje,
+  Producto,
   // Clases JavaScript (si las necesitas)
   IngredienteClass,
   CategoryClass,
-  ProductoConnectionClass
+  ProductoClass
 };

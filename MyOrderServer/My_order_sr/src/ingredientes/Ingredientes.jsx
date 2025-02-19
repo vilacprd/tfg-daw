@@ -37,11 +37,10 @@ const Ingredientes = () => {
     setShowModal(true);
   };
 
-  // Cerrar el modal (se usará tanto para cancelar como para finalizar)
+  // Cerrar el modal (y recargar ingredientes)
   const handleCloseModal = () => {
     setShowModal(false);
     setIngredienteEdit(null);
-    // Recarga la lista después de crear/editar
     fetchIngredientes();
   };
 
@@ -71,6 +70,15 @@ const Ingredientes = () => {
 
             <p className="text-xs font-bold">Tipo:</p>
             <p className="text-xs mb-2">{ingrediente.type}</p>
+
+            {/* Mostrar imagen si existe */}
+            {ingrediente.imagen && (
+              <img
+                src={`http://localhost:3000/uploads/${ingrediente.imagen}`}
+                alt={ingrediente.nombre}
+                className="mt-2 rounded max-h-40 w-full object-contain"
+              />
+            )}
 
             {/* Botones Editar/Eliminar */}
             <div className="flex justify-between mt-2">
