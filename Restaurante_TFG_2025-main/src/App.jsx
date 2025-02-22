@@ -73,10 +73,23 @@ const App = () => {
   const addIngrediente = (ingrediente) => { setIngredientes([...ingredientes, ingrediente]); };
 
   const handleLogout = () => {
+    console.log("DEBUG: Cerrando sesión");
     localStorage.removeItem('usuario');
     localStorage.removeItem('token');
     setUsuario(null);
+  
+    // 🔹 Restablecer todos los estados al cerrar sesión
+    setShowProductos(false);
+    setShowCategorias(false);
+    setShowIngredientes(false);
+    setShowCrearCategoria(false);
+    setShowCrearProducto(false);
+    setShowCrearIngrediente(false);
+    setShowCrearUsuario(false);
+    setShowComandas(false);
+    setSelectedComanda(null);
   };
+  
 
   const botonesPorRol = {
     admin: [
