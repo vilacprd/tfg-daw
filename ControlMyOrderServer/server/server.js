@@ -5,17 +5,22 @@ import { Sequelize, DataTypes } from 'sequelize';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { Ingrediente, Category, ProductoConnection } from './models.js'; // Importa las clases
-
+import { Ingrediente, Category, ProductoConnection, Usuario } from './models.js'; // Importa las clases
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 // 
 import AWS from 'aws-sdk';
 
+
+
 const app = express();
 const port = 3000;
+const SECRET_KEY = "claveSecreta";
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.json());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -116,6 +121,160 @@ const Order = sequelize.define('Order', {
     allowNull: false,
   },
 });
+
+
+
+/*
+Funcion para crear un user admin
+async function createAdminUser() {
+  try {
+    // Asegurarse de que la tabla exista
+    await sequelize.sync();
+    
+    // Verificar si ya existe un usuario admin
+    const adminExists = await UsuarioModel.findOne({ where: { nombre: 'admin' } });
+    if (adminExists) {
+      console.log('El usuario admin ya existe.');
+      return;
+    }
+    
+    const adminPassword = 'admin';
+    const hashedPassword = await bcrypt.hash(adminPassword, 10); // 10 rounds de sal
+    const adminUser = await UsuarioModel.create({
+      nombre: 'admin',
+      password: hashedPassword,
+      rol: 'admin',
+    });
+    console.log('Usuario admin creado correctamente:', adminUser);
+  } catch (error) {
+    console.error('Error al crear el usuario admin:', error);
+  } finally {
+    await sequelize.close();
+  }
+}
+
+createAdminUser();
+*/
+
+// =====================
+//  LOGIN
+// =====================
+app.post('/server/login', async (req, res) => {
+  try {
+    const { nombre, password } = req.body;
+    const usuario = await Usuario.findOne({ where: { nombre } });
+
+    if (!usuario) {
+      return res.status(400).json({ message: "Usuario no encontrado" });
+    }
+
+    const esValida = await bcrypt.compare(password, usuario.password);
+    if (!esValida) {
+      return res.status(401).json({ message: "Contraseña incorrecta" });
+    }
+
+    const token = jwt.sign(
+      { id: usuario.id, nombre: usuario.nombre, rol: usuario.rol },
+      SECRET_KEY,
+      { expiresIn: "2h" }
+    );
+
+    res.json({ token, usuario: { id: usuario.id, nombre: usuario.nombre, rol: usuario.rol } });
+  } catch (error) {
+    console.error("❌ Error en login:", error);
+    res.status(500).json({ message: "Error en el servidor", error });
+  }
+});
+
+
+app.post('/server/usuarios', async (req, res) => {
+  try {
+    const { nombre, password, rol } = req.body;
+
+    if (!nombre || !password || !rol) {
+      return res.status(400).json({ message: "Faltan datos" });
+    }
+
+    const existe = await Usuario.findOne({ where: { nombre } });
+    if (existe) {
+      return res.status(400).json({ message: "El usuario ya existe" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const nuevoUsuario = await Usuario.create({
+      nombre,
+      password: hashedPassword,
+      rol,
+    });
+
+    res.status(201).json({
+      message: "Usuario creado exitosamente",
+      usuario: { id: nuevoUsuario.id, nombre: nuevoUsuario.nombre, rol: nuevoUsuario.rol },
+    });
+  } catch (error) {
+    console.error("❌ Error al registrar usuario:", error);
+    res.status(500).json({ message: "Error en el servidor", error });
+  }
+});
+
+
+app.get('/server/usuarios', async (req, res) => {
+  try {
+    const usuarios = await Usuario.findAll({ attributes: ['id', 'nombre', 'rol'] }); // Obtiene usuarios sin mostrar contraseñas
+    res.json(usuarios);
+  } catch (error) {
+    console.error("❌ Error al obtener usuarios:", error);
+    res.status(500).json({ message: "Error en el servidor", error });
+  }
+});
+
+app.put('/server/usuarios/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nombre, rol } = req.body;
+
+    // Buscar el usuario por ID
+    const usuario = await Usuario.findByPk(id);
+    if (!usuario) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    // Actualizar los datos del usuario
+    usuario.nombre = nombre;
+    usuario.rol = rol;
+    await usuario.save();
+
+    res.json({ message: "Usuario actualizado correctamente", usuario });
+  } catch (error) {
+    console.error("❌ Error al actualizar usuario:", error);
+    res.status(500).json({ message: "Error en el servidor", error });
+  }
+});
+
+app.delete('/server/usuarios/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { usuarioId } = req.body; // ID del usuario que hace la solicitud
+
+    const usuario = await Usuario.findByPk(id);
+    if (!usuario) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    // Verificar si el usuario es admin y está tratando de eliminarse a sí mismo
+    if (usuario.id === usuarioId && usuario.rol === 'admin') {
+      return res.status(403).json({ message: "No puedes eliminarte a ti mismo siendo administrador." });
+    }
+
+    // Eliminar usuario
+    await usuario.destroy();
+    res.json({ message: "Usuario eliminado correctamente" });
+  } catch (error) {
+    console.error("❌ Error al eliminar usuario:", error);
+    res.status(500).json({ message: "Error en el servidor", error });
+  }
+});
+
 
 // Sincronizar base de datos
 sequelize.sync().then(() => { // Elimina { force: true }
