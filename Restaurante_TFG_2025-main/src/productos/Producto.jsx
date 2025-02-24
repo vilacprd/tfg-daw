@@ -5,9 +5,6 @@ const Producto = ({ producto, handleDelete, handleEdit }) => {
   let categorias = [];
   let ingredientesOriginales = [];
 
-  console.log('Producto 05 linea', producto.ingredientesOriginales);
-  console.log('Producto 05 linea', producto.categorias);
-
   try {
     if (producto.categorias) {
       categorias = producto.categorias.map((categoria) => categoria.nombre);

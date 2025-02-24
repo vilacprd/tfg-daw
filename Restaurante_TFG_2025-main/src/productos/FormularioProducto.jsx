@@ -4,12 +4,12 @@ import axios from 'axios';
 const FormularioProducto = ({ agregarProducto }) => {
   const [nombre, setNombre] = useState('');
   const [precio, setPrecio] = useState('');
-
+  const url = "https://myorderapp-production.up.railway.app/"
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (nombre && precio) {
       try {
-        await axios.post('http://localhost:3000/server/productos', { nombre, precio });
+        await axios.post(url+'server/productos', { nombre, precio });
         agregarProducto({ nombre, precio });
         setNombre('');
         setPrecio('');

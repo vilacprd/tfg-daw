@@ -1,10 +1,10 @@
 import axios from 'axios';
 
 const API_URL = 'http://localhost:3000/server';
-
+const url = "https://myorderapp-production.up.railway.app/server"
 export const fetchProductos = async () => {
   try {
-    const response = await axios.get(`${API_URL}/productos`);
+    const response = await axios.get(`${url}/productos`);
     console.log('Server response:', response); 
     return response.data;
   } catch (error) {
@@ -16,7 +16,7 @@ export const fetchProductos = async () => {
 export const createProducto = async (producto) => {
   try {
    
-    const response = await axios.post(`${API_URL}/productos`, producto, {
+    const response = await axios.post(`${url}/productos`, producto, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -30,7 +30,7 @@ export const createProducto = async (producto) => {
 
 export const updateProducto = async (id, producto) => {
   try {
-    const response = await axios.put(`${API_URL}/productos/${id}`, producto, {
+    const response = await axios.put(`${url}/productos/${id}`, producto, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -44,7 +44,7 @@ export const updateProducto = async (id, producto) => {
 
 export const deleteProducto = async (id) => {
   try {
-    const response = await axios.delete(`${API_URL}/productos/${id}`);
+    const response = await axios.delete(`${url}/productos/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error al eliminar el producto:', error);
@@ -54,7 +54,7 @@ export const deleteProducto = async (id) => {
 
 export const fetchCategorias = async () => {
   try {
-    const response = await axios.get(`${API_URL}/categorias`);
+    const response = await axios.get(`${url}/categorias`);
     return response.data;
   } catch (error) {
     console.error('Error al cargar las categorías:', error);
@@ -64,7 +64,7 @@ export const fetchCategorias = async () => {
 
 export const createCategoria = async (categoria) => {
   try {
-    const response = await axios.post(`${API_URL}/categorias`, categoria, {
+    const response = await axios.post(`${url}/categorias`, categoria, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -78,7 +78,7 @@ export const createCategoria = async (categoria) => {
 
 export const updateCategoria = async (id, categoria) => {
   try {
-    const response = await axios.put(`${API_URL}/categorias/${id}`, categoria, {
+    const response = await axios.put(`${url}/categorias/${id}`, categoria, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -92,7 +92,7 @@ export const updateCategoria = async (id, categoria) => {
 
 export const deleteCategoria = async (id) => {
   try {
-    const response = await axios.delete(`${API_URL}/categorias/${id}`);
+    const response = await axios.delete(`${url}/categorias/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error al eliminar la categoría:', error);
@@ -102,7 +102,7 @@ export const deleteCategoria = async (id) => {
 
 export const fetchIngredientes = async () => {
   try {
-    const response = await axios.get(`${API_URL}/ingredientes`);
+    const response = await axios.get(`${url}/ingredientes`);
     return response.data;
   } catch (error) {
     console.error('Error al cargar los ingredientes:', error);
@@ -112,7 +112,7 @@ export const fetchIngredientes = async () => {
 
 export const createIngrediente = async (ingrediente) => {
   try {
-    const response = await axios.post(`${API_URL}/ingredientes`, ingrediente);
+    const response = await axios.post(`${url}/ingredientes`, ingrediente);
     return response.data;
   } catch (error) {
     console.error('Error al crear el ingrediente:', error);
@@ -122,7 +122,7 @@ export const createIngrediente = async (ingrediente) => {
 
 export const updateIngrediente = async (id, ingrediente) => {
   try {
-    const response = await axios.put(`${API_URL}/ingredientes/${id}`, ingrediente);
+    const response = await axios.put(`${url}/ingredientes/${id}`, ingrediente);
     return response.data;
   } catch (error) {
     console.error('Error al actualizar el ingrediente:', error);
@@ -132,7 +132,7 @@ export const updateIngrediente = async (id, ingrediente) => {
 
 export const deleteIngrediente = async (id) => {
   try {
-    const response = await axios.delete(`${API_URL}/ingredientes/${id}`);
+    const response = await axios.delete(`${ur}/ingredientes/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error al eliminar el ingrediente:', error);
@@ -147,7 +147,7 @@ export const deleteIngrediente = async (id) => {
 const getUploadUrlProductos = async (file) => {
   try {
    // file = "/Img_Productos/" + file;
-    const response = await fetch(`http://localhost:3000/s3/generateUploadUrl/productos?key=${file.name}`);
+    const response = await fetch(`https://myorderapp-production.up.railway.app/s3/generateUploadUrl/productos?key=${file.name}`);
     const data = await response.json();
     return data.uploadUrl; // Devuelve la URL pre-firmada
   } catch (error) {
@@ -180,7 +180,7 @@ export const uploadImageToS3Productos = async (file) => {
   export const obtenerUrlDeImagenProductos = async (key) => {
     try {
       console.log('Key:', key)
-      const response = await fetch(`http://localhost:3000/s3/generateDownloadUrl/productos?key=${key}`);
+      const response = await fetch(`https://myorderapp-production.up.railway.app/s3/generateDownloadUrl/productos?key=${key}`);
       const data = await response.json();
       return data.downloadUrl;
     } catch (error) {
