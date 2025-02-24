@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Category } from '../models/model';
+import { createCategoria, updateCategoria ,uploadImageToS3 as uploadImageToS3 } from '../connections';
 
 const CrearCategoriaModal = ({ handleCloseModal, categoriaEdit }) => {
   const [nombre, setNombre] = useState('');
@@ -26,18 +27,27 @@ const CrearCategoriaModal = ({ handleCloseModal, categoriaEdit }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if(!nombre || !descripcion ||imagen == null){ 
+      alert('Por favor, rellena todos los campos');
+      return;
+  }
+  if(imagen){
+          await uploadImageToS3(imagen,"Img_Categorias");
+    
+  }
     const categoria = new Category(
       categoriaEdit ? categoriaEdit.id : null,
       nombre,
       descripcion,
-      imagen,
+      imagen?.name || '',
       isActive
     );
+    console.log('Categoría a crear/actualizar:', categoria);
 
     const categoriaJson = JSON.stringify({
       nombre: categoria.nombre,
       descripcion: categoria.description,
-      imagen: categoria.imgCategory,
+      imagen: "Img_Categorias/"+categoria.imgCategory,
       isActive: categoria.isActive
     });
 
@@ -45,14 +55,14 @@ const CrearCategoriaModal = ({ handleCloseModal, categoriaEdit }) => {
 
     try {
       if (categoriaEdit) {
-        await axios.put(`http://localhost:3000/server/categorias/${categoriaEdit.id}`, categoriaJson, {
+        await updateCategoria(categoriaEdit.id, categoriaJson, {
           headers: {
             'Content-Type': 'application/json',
           },
         });
         alert('Categoría actualizada exitosamente');
       } else {
-        await axios.post('http://localhost:3000/server/categorias', categoriaJson, {
+        await createCategoria(categoriaJson, {
           headers: {
             'Content-Type': 'application/json',
           },

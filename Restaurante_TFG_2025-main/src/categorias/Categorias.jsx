@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchCategorias, deleteCategoria } from '../connections';
 import CrearCategoriaModal from './CrearCategoriaModal';
-
+import ImagenCategorias from './imagenCategorias';
 const Categorias = ({ handleCrearCategoriaClick }) => {
   const [categorias, setCategorias] = useState([]);
   const [categoriaEdit, setCategoriaEdit] = useState(null);
@@ -85,14 +85,9 @@ const Categorias = ({ handleCrearCategoriaClick }) => {
             <p className="text-xs mb-2">{categoria.descripcion}</p>
 
             {categoria.imagen && (
-              <>
-                <p className="text-xs font-bold">Imagen:</p>
-                <img
-                  src={`http://localhost:3000/${categoria.imagen}`}
-                  alt={categoria.nombre}
-                  className="mt-2 max-w-full max-h-24 rounded"
-                />
-              </>
+              <div className="flex justify-center mb-2 XEEEEEE">
+                <ImagenCategorias imagenKey={categoria.imagen} />
+              </div>
             )}
 
             {/* Condicional para el estado Activo/Inactivo */}

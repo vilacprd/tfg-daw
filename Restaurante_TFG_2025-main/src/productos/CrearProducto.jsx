@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { createProducto, updateProducto, fetchCategorias, fetchIngredientes, uploadImageToS3Productos } from '../connections';
+import { createProducto, updateProducto, fetchCategorias, fetchIngredientes, uploadImageToS3 as uploadImageToS3 } from '../connections';
 import { ProductoConnection } from '../models/model';
 
 const CrearProducto = ({ handleCloseModal, productoEdit }) => {
@@ -84,7 +84,7 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
 
     // Subir imagen a S3 (si existe)
     if (imagen) {
-      await uploadImageToS3Productos(imagen);
+      await uploadImageToS3(imagen,"Img_Productos");
     }
 
     // Construir el objeto Producto
@@ -106,7 +106,7 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
       nombre: producto.nombre,
       precio: producto.precio,
       descripcion: producto.descripcion,
-      imagen: producto.imagen, // nombre del archivo
+      imagen: "Img_Productos/"+producto.imagen, // nombre del archivo
       categorias: producto.categorias,
       ingredientesOriginales: producto.ingredientesOriginales,
       personalizable: producto.isPersonalizable,
