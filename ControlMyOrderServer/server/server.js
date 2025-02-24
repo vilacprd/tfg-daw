@@ -5,7 +5,7 @@ import { Sequelize, DataTypes } from 'sequelize';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { Ingrediente, Category, ProductoConnection, Usuario } from './models.js'; // Importa las clases
+import { Ingrediente, Category, ProductoConnection, Usuario, Categoria } from './models.js'; // Importa las clases
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 // 
@@ -56,23 +56,6 @@ const Product = sequelize.define('Product', {
   },
   personalizable: {
     type: DataTypes.BOOLEAN,
-  },
-  isActive: {
-    type: DataTypes.BOOLEAN,
-  },
-});
-
-// Modelo de Categoría
-const Categoria = sequelize.define('Categoria', {
-  nombre: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  descripcion: {
-    type: DataTypes.STRING,
-  },
-  imagen: {
-    type: DataTypes.STRING,
   },
   isActive: {
     type: DataTypes.BOOLEAN,
@@ -409,12 +392,22 @@ app.delete('/server/productos/:id', async (req, res) => {
 */
 app.post('/server/categorias', async (req, res) => {
   try {
+    console.log('Datos de la categoría recibidos:', req.body); // Verifica los datos recibidos
     const { nombre, descripcion, imagen, isActive } = req.body;
-    const categoriaData = new Category(null, nombre, descripcion, imagen, isActive);
+    console.log('Datos de la categoría recibidos:', req.body); // Verifica los datos recibidos
+    if (!nombre) {
+      return res.status(400).send({ message: 'El nombre de la categoría es obligatorio' });
+    }
+    const categoriaData = {
+      nombre,
+      descripcion,
+      imagen,
+      isActive,
+    };
     const categoria = await Categoria.create(categoriaData);
     res.status(201).send(categoria);
   } catch (error) {
-    console.error('Error al guardar la categoría:', error); // Agrega esta línea para registrar el error
+    console.error('Error al guardar la categoría:', error);
     res.status(400).send({ message: 'Error al guardar la categoría', error });
   }
 });
@@ -435,7 +428,12 @@ app.put('/server/categorias/:id', async (req, res) => {
     const categoria = await Categoria.findByPk(req.params.id);
     if (categoria) {
       const { nombre, descripcion, imagen, isActive } = req.body;
-      const categoriaData = new Category(req.params.id, nombre, descripcion, imagen, isActive);
+      const categoriaData = {
+        nombre,
+        descripcion,
+        imagen,
+        isActive,
+      };
       await categoria.update(categoriaData);
       res.status(200).send(categoria);
     } else {
@@ -560,8 +558,7 @@ app.get('/api/productos', async (req, res) => {
       return {
         ...product.dataValues,
         categorias: categorias.map(cat => new Category(cat.id, cat.nombre, cat.descripcion, cat.imgCategory, cat.isActive)),
-        ingredientesOriginales: ingredientesOriginales.map(ing => new Ingrediente(ing.id, ing.nombre, ing.cantidad, ing.type)),
-        
+        ingredientesOriginales: ingredientesOriginales.map(ing => new Ingrediente(ing.id, ing.nombre, ing.cantidad, ing.type))
 
       };
     });
@@ -638,6 +635,7 @@ app.get('/s3/generateUploadUrl/productos', (req, res) => {
   if (!objectKey) {
     return res.status(400).json({ error: 'Falta el parámetro "key".' });
   }
+  console.log("Clave recibida para subida:", objectKey); // Log de la clave recibida
   const s3 = new AWS.S3();
   const params = {
     Bucket: S3_BUCKET,
@@ -651,6 +649,7 @@ app.get('/s3/generateUploadUrl/productos', (req, res) => {
       console.error('Error generando la URL de subida:', err);
       return res.status(500).json({ error: 'Error generando la URL de subida' });
     }
+    console.log("URL de subida generada:", url); // Log de la URL generada
     res.json({ uploadUrl: url });
   });
 });
@@ -660,7 +659,7 @@ app.get('/s3/generateDownloadUrl/productos', (req, res) => {
   if (!objectKey) {
     return res.status(400).json({ error: 'Falta el parámetro "key".' });
   }
-  console.log("Key:", objectKey);
+  console.log("Clave recibida para descarga:", objectKey); // Log de la clave recibida
   const s3 = new AWS.S3();
   const params = {
     Bucket: S3_BUCKET,
@@ -672,6 +671,7 @@ app.get('/s3/generateDownloadUrl/productos', (req, res) => {
       console.error('Error generando la URL de descarga:', err);
       return res.status(500).json({ error: 'Error generando la URL de descarga' });
     }
+    console.log("URL de descarga generada:", url); // Log de la URL generada
     res.json({ downloadUrl: url });
   });
 });

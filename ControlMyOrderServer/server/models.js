@@ -13,13 +13,13 @@ class Ingrediente {
 }
 
 class Category {
-    constructor(id, nombre = null, descripcion = null, imgCategory, isActive = true) {
-        this.id = id;
-        this.nombre = nombre;
-        this.descripcion = descripcion;
-        this.imgCategory = imgCategory;
-        this.isActive = isActive;
-    }
+  constructor(id, nombre = null, descripcion = null, imgCategory, isActive = true) {
+    this.id = id;
+    this.nombre = nombre;
+    this.descripcion = descripcion;
+    this.imagen = imgCategory;
+    this.isActive = isActive;
+}
 }
 
 class ProductoConnection {
@@ -83,6 +83,21 @@ const Usuario = sequelize.define('Usuario', {
   tableName: 'usuarios',
   timestamps: false,
 });
-  
 
-export { sequelize,Ingrediente, Category, ProductoConnection, Usuario };
+const Categoria = sequelize.define('Categoria', {
+  nombre: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  descripcion: {
+    type: DataTypes.STRING,
+  },
+  imagen: {
+    type: DataTypes.STRING,
+  },
+  isActive: {
+    type: DataTypes.BOOLEAN,
+  },
+});
+
+export { sequelize,Ingrediente, Category, ProductoConnection, Usuario, Categoria };
