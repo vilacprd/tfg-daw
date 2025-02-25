@@ -67,7 +67,7 @@ export const createCategoria = async (categoria) => {
     console.log("CEG", categoria);
     const response = await axios.post(`${API_URL}/categorias`, categoria, {
       headers: {
-        'Content-Type': 'application/json', // Cambia a application/json
+        'Content-Type': 'application/json',
       },
     });
     return response.data;
@@ -82,7 +82,7 @@ export const updateCategoria = async (id, categoria) => {
   try {
     const response = await axios.put(`${API_URL}/categorias/${id}`, categoria, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': 'application/json',
       },
     });
     return response.data;

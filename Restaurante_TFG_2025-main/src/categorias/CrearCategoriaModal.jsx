@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Category } from '../models/model';
-import { createCategoria, updateCategoria ,uploadImageToS3 as uploadImageToS3 } from '../connections';
+import { createCategoria, updateCategoria, uploadImageToS3 as uploadImageToS3 } from '../connections';
 
 const CrearCategoriaModal = ({ handleCloseModal, categoriaEdit }) => {
   const [nombre, setNombre] = useState('');
@@ -14,7 +13,9 @@ const CrearCategoriaModal = ({ handleCloseModal, categoriaEdit }) => {
     if (categoriaEdit) {
       setNombre(categoriaEdit.nombre);
       setDescripcion(categoriaEdit.descripcion);
-      setImagenPreview(`http://localhost:3000/${categoriaEdit.imagen}`);
+      if (categoriaEdit.imagen) {
+        setImagenPreview(`http://localhost:3000/${categoriaEdit.imagen}`);
+      }
       setIsActive(categoriaEdit.isActive);
     }
   }, [categoriaEdit]);
@@ -27,31 +28,33 @@ const CrearCategoriaModal = ({ handleCloseModal, categoriaEdit }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if(!nombre || !descripcion ||imagen == null){ 
+    if (!nombre || !descripcion) {
       alert('Por favor, rellena todos los campos');
       return;
-  }
-  if(imagen){
-          await uploadImageToS3(imagen,"Img_Categorias");
-    
-  }
+    }
+
+    let imagenUrl = categoriaEdit ? categoriaEdit.imagen : ''; // Mantener la imagen existente si no se modifica
+
+    // Subir imagen a S3 (si existe)
+    if (imagen) {
+      await uploadImageToS3(imagen, "Img_Categorias");
+      imagenUrl = "Img_Categorias/" + imagen.name; // Actualizar la URL de la imagen si se ha subido una nueva
+    }
+
     const categoria = new Category(
       categoriaEdit ? categoriaEdit.id : null,
       nombre,
       descripcion,
-      imagen?.name || '',
+      imagenUrl, // Utilizar la URL de la imagen existente o la nueva
       isActive
     );
-    console.log('Categoría a crear/actualizar:', categoria);
 
-    const categoriaJson = JSON.stringify({
+    console.log("CATEGORIA"+JSON.stringify(categoria));
+    const categoriaJson = {
       nombre: categoria.nombre,
       descripcion: categoria.description,
-      imagen: "Img_Categorias/"+categoria.imgCategory,
-      isActive: categoria.isActive
-    });
-
-    console.log('Categoría a crear/actualizar:', categoriaJson);
+      imagen: categoria.imgCategory, // URL de la imagen
+      isActive: categoria.isActive    };
 
     try {
       if (categoriaEdit) {
@@ -62,6 +65,7 @@ const CrearCategoriaModal = ({ handleCloseModal, categoriaEdit }) => {
         });
         alert('Categoría actualizada exitosamente');
       } else {
+        console.log("CATEGORIA AL CREAR"+JSON.stringify(categoriaJson));
         await createCategoria(categoriaJson, {
           headers: {
             'Content-Type': 'application/json',

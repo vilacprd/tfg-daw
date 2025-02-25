@@ -440,6 +440,7 @@ app.put('/server/categorias/:id', async (req, res) => {
       res.status(404).send({ message: 'Categoría no encontrada' });
     }
   } catch (error) {
+    console.error('Error al actualizar la categoría:', error);
     res.status(400).send(error);
   }
 });

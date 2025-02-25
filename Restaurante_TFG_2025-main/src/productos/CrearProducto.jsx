@@ -43,7 +43,9 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
       setNombre(productoEdit.nombre || '');
       setPrecio(productoEdit.precio || '');
       setDescripcion(productoEdit.descripcion || '');
-      setImagenPreview(productoEdit.imagen ? `http://localhost:3000/${productoEdit.imagen}` : null);
+      if (productoEdit.imagen) {
+        setImagenPreview(`http://localhost:3000/${productoEdit.imagen}`);
+      }
       setSelectedCategorias(productoEdit.categorias || []);
       setSelectedIngredientesOriginales(productoEdit.ingredientesOriginales || []);
       setPersonalizable(productoEdit.personalizable || false);
@@ -82,9 +84,12 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
       return;
     }
 
+    let imagenUrl = productoEdit ? productoEdit.imagen : ''; // Mantener la imagen existente si no se modifica
+
     // Subir imagen a S3 (si existe)
     if (imagen) {
-      await uploadImageToS3(imagen,"Img_Productos");
+      await uploadImageToS3(imagen, "Img_Productos");
+      imagenUrl = "Img_Productos/" + imagen.name; // Actualizar la URL de la imagen si se ha subido una nueva
     }
 
     // Construir el objeto Producto
@@ -93,7 +98,7 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
       nombre,
       parseFloat(precio),
       descripcion,
-      imagen?.name || '', // nombre del archivo
+      imagenUrl, // Utilizar la URL de la imagen existente o la nueva
       0, // cantidad
       selectedCategorias,
       selectedIngredientesOriginales,
@@ -106,7 +111,7 @@ const CrearProducto = ({ handleCloseModal, productoEdit }) => {
       nombre: producto.nombre,
       precio: producto.precio,
       descripcion: producto.descripcion,
-      imagen: "Img_Productos/"+producto.imagen, // nombre del archivo
+      imagen: producto.imagen, // URL de la imagen
       categorias: producto.categorias,
       ingredientesOriginales: producto.ingredientesOriginales,
       personalizable: producto.isPersonalizable,
