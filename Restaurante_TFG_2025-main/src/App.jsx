@@ -12,9 +12,11 @@ import Comandas from './comandas/Comandas';
 import ComandaDetails from './comandas/ComandaDetails';
 import axios from 'axios';
 import Login from './components/Login/Login';
+import { useUser } from './context/userContext';
+
 
 const App = () => {
-  const [usuario, setUsuario] = useState(null);
+  const { usuario, logout } = useUser();
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [showProductos, setShowProductos] = useState(false);
   const [showCategorias, setShowCategorias] = useState(false);
@@ -29,20 +31,11 @@ const App = () => {
   const [ingredientes, setIngredientes] = useState([]);
   const [ingredienteEdit, setIngredienteEdit] = useState(null);
 
-  useEffect(() => {
-    const storedUsuario = localStorage.getItem('usuario');
-    if (storedUsuario && storedUsuario !== "null") {
-      try {
-        setUsuario(JSON.parse(storedUsuario));
-      } catch (e) {
-        console.error("ERROR: No se pudo parsear el usuario almacenado", e);
-      }
-    }
-  }, []);
-
   if (!usuario) {
-    return <Login setUsuario={setUsuario} />;
-  }
+    return <Login />;
+  } 
+
+  
 
   const formattedID = usuario.id ? usuario.id.toString().padStart(5, '0') : '-----';
 
@@ -72,61 +65,11 @@ const App = () => {
   const addCategoria = (categoria) => { setCategorias([...categorias, categoria]); };
   const addIngrediente = (ingrediente) => { setIngredientes([...ingredientes, ingrediente]); };
 
-  const handleLogout = () => {
-    console.log("DEBUG: Cerrando sesión");
-    localStorage.removeItem('usuario');
-    localStorage.removeItem('token');
-    setUsuario(null);
-  
-    // 🔹 Restablecer todos los estados al cerrar sesión
-    setShowProductos(false);
-    setShowCategorias(false);
-    setShowIngredientes(false);
-    setShowCrearCategoria(false);
-    setShowCrearProducto(false);
-    setShowCrearIngrediente(false);
-    setShowCrearUsuario(false);
-    setShowComandas(false);
-    setSelectedComanda(null);
-  };
-  
-
-  const botonesPorRol = {
-    admin: [
-      { label: 'Productos', action: handleProductos },
-      { label: 'Categorías', action: handleCategorias },
-      { label: 'Ingredientes', action: handleIngredientes },
-      { label: 'Crear Categoría', action: handleCrearCategoria },
-      { label: 'Crear Producto', action: handleCrearProducto },
-      { label: 'Crear Ingrediente', action: handleCrearIngrediente },
-      { label: 'Usuarios', action: handleUsuariosClick },
-      { label: 'Comandas', action: handleComandasClick },
-    ],
-    encargado: [
-      { label: 'Productos', action: handleProductos },
-      { label: 'Categorías', action: handleCategorias },
-      { label: 'Ingredientes', action: handleIngredientes },
-      { label: 'Crear Categoría', action: handleCrearCategoria },
-      { label: 'Crear Producto', action: handleCrearProducto },
-      { label: 'Crear Ingrediente', action: handleCrearIngrediente },
-      { label: 'Comandas', action: handleComandasClick },
-    ],
-    camarero: [
-      { label: 'Productos', action: handleProductos },
-      { label: 'Categorías', action: handleCategorias },
-      { label: 'Ingredientes', action: handleIngredientes },
-      { label: 'Crear Categoría', action: handleCrearCategoria },
-      { label: 'Crear Producto', action: handleCrearProducto },
-      { label: 'Crear Ingrediente', action: handleCrearIngrediente },
-    ],
-  };
 
   return (
     <div className="flex h-screen w-full">
       <Navigation
-        sidebarExpanded={sidebarExpanded}
-        setSidebarExpanded={setSidebarExpanded}
-        usuario={usuario}
+
         handleButtonClick={handleProductos}
         handleCategoryClick={handleCategorias}
         handleIngredienteClick={handleIngredientes}
@@ -140,7 +83,7 @@ const App = () => {
               Bienvenid@ {usuario.nombre} - {usuario.rol}
             </h1>
             <button
-              onClick={handleLogout}
+              onClick={logout}
               className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center"
             >
               <Power className="mr-2" /> Cerrar sesión

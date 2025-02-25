@@ -1,15 +1,14 @@
 import React from 'react';
+import { useUser } from './context/userContext';
 
 const Navigation = ({
-  usuario,
   handleButtonClick,        // Productos
   handleCategoryClick,        // Categorías
   handleIngredienteClick,     // Ingredientes
   handleComandasClick,        // Mostrar Comandas
   handleUsuariosClick,        // Usuarios
-  sidebarExpanded,
-  setSidebarExpanded,
 }) => {
+   const { usuario } = useUser();
   return (
     <nav className="w-[200px] h-screen fixed top-0 bg-indigo-700 text-white p-4 shadow-md overflow-auto">
       <h2 className="text-2xl font-bold mb-4 text-center">

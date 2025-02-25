@@ -4,28 +4,29 @@ import Letters from '../Letters/Letters'
 import Button from '../Button/Button'
 import LetterTexture from '../LetterTexture/LetterTexture'
 import Input from '../Input/Input'
+import { useUser } from '../../context/userContext'
 import { useState } from 'react';
 
-export default function Login({ setUsuario }) {
-  const squares = ["#E12A09","#4BA864","#FF6F00","#2B0200","#FFD769"];
+export default function Login() {
   
-  // Estados para gestionar las credenciales y errores
-  const [nombre, setNombre] = useState("");
-  const [password, setPassword] = useState("");
+  
+  const { login } = useUser();
+
+  const [usuario, setUsuario] = useState({ nombre: "", password: "" })
   const [error, setError] = useState("");
 
   // Función para manejar el login
   const handleLogin = async (e) => {
     e.preventDefault();
 
- // Depuración: Verifica los valores de nombre y password
- console.log("Intentando login con:", { nombre, password });
+  // Depuración: Verifica los valores de nombre y password
+  console.log(`Intentando login con nombre:${usuario.nombre}, password:${usuario.password} }`);
 
     try {
       const response = await fetch("http://localhost:3000/server/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre, password })
+        body: JSON.stringify({ nombre:usuario.nombre, password:usuario.password })
       });
       const data = await response.json();
       if (!response.ok) {
@@ -34,8 +35,8 @@ export default function Login({ setUsuario }) {
       // Guardar token y usuario en localStorage
       localStorage.setItem("token", data.token);
       localStorage.setItem("usuario", JSON.stringify(data.usuario));
-      // Actualizar el estado en el componente padre para cambiar a la App
-      setUsuario(data.usuario);
+      
+      login(data.usuario);
     } catch (err) {
       setError(err.message);
     }
@@ -99,10 +100,10 @@ export default function Login({ setUsuario }) {
             type="text" 
             className="w-full grow text-beef" 
             placeHolder="Usuario"
-            value={nombre} // ✅ Ahora es controlado por Login.jsx
-            onChange={(e) => {
-                console.log("Nuevo nombre ingresado:", e.target.value); // 🚀 Depuración
-                setNombre(e.target.value);
+            value={usuario.nombre} // ✅ Ahora es controlado por Login.jsx
+          onChange={(e) => {
+              console.log("Nuevo nombre ingresado:", e.target.value); // Metete los comentarios de chatgpt por el culo de verdad
+              setUsuario({...usuario,nombre:e.target.value})
             }}
         />
 
@@ -110,10 +111,10 @@ export default function Login({ setUsuario }) {
             type="password" 
             className="w-full grow text-beef" 
             placeHolder="Password"
-            value={password} // ✅ Controlado externamente
+            value={usuario.password} // ✅ Controlado externamente
             onChange={(e) => {
-                console.log("Nueva contraseña ingresada:", e.target.value); // 🚀 Depuración
-                setPassword(e.target.value);
+              console.log("Nueva contraseña ingresada:", e.target.value); // 🚀 Depuración
+              setUsuario({ ...usuario, password: e.target.value });
             }}
         />
 

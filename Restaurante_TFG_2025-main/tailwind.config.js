@@ -7,7 +7,8 @@ export default {
     extend: {
       fontFamily: {
         flame: ['Flame', 'Times new Roman'], // times new roman por si no pilla la fuente que sea obvio
-        meatWide:['SansMeatWide', 'Times new Roman'],
+        flameSans: ['Flame Sans', 'Times new Roman'],
+        meatWide: ['SansMeatWide', 'Times new Roman'],
       },
       animation: {
         reveal: "reveal 1.8s 1s ease-in-out forwards",
@@ -31,7 +32,8 @@ export default {
         cream: "#F5EBDC", 
         "cream-dark": "#EFE1CC",
         lettuce:"#4BA864",
-        beef: "#2B0200",
+        beef: "rgb(56 9 6 / 1)",
+        "beef-light":"#502314"
 
       }
     },
