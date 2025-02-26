@@ -49,7 +49,6 @@ const CrearCategoriaModal = ({ handleCloseModal, categoriaEdit }) => {
       isActive
     );
 
-    console.log("CATEGORIA"+JSON.stringify(categoria));
     const categoriaJson = {
       nombre: categoria.nombre,
       descripcion: categoria.description,
