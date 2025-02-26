@@ -3,10 +3,10 @@ import { useUser } from './context/userContext';
 
 const Navigation = ({
   handleButtonClick,        // Productos
-  handleCategoryClick,        // Categorías
-  handleIngredienteClick,     // Ingredientes
-  handleComandasClick,        // Mostrar Comandas
-  handleUsuariosClick,        // Usuarios
+  handleCategoryClick,      // Categorías
+  handleIngredienteClick,   // Ingredientes
+  handleComandasClick,      // Mostrar Comandas
+  handleUsuariosClick,      // Usuarios
 }) => {
    const { usuario } = useUser();
   return (
@@ -15,32 +15,37 @@ const Navigation = ({
         Panel de Comandas
       </h2>
       <ul className="flex flex-col space-y-3">
-        <li>
-          <button
-            onClick={handleCategoryClick}
-            className="w-full px-3 py-2 bg-indigo-600 hover:bg-indigo-500 rounded transition-colors"
-          >
-            Categorías
-          </button>
-        </li>
-        <li>
-          <button
-            onClick={handleButtonClick}
-            className="w-full px-3 py-2 bg-indigo-600 hover:bg-indigo-500 rounded transition-colors"
-          >
-            Productos
-          </button>
-        </li>
-        <li>
-          <button
-            onClick={handleIngredienteClick}
-            className="w-full px-3 py-2 bg-indigo-600 hover:bg-indigo-500 rounded transition-colors"
-          >
-            Ingredientes
-          </button>
-        </li>
-        {/* Mostrar Comandas sólo para admin y encargado */}
+        {/* Solo admin y encargado pueden ver categorías, productos e ingredientes */}
         {(usuario.rol === 'admin' || usuario.rol === 'encargado') && (
+          <>
+            <li>
+              <button
+                onClick={handleCategoryClick}
+                className="w-full px-3 py-2 bg-indigo-600 hover:bg-indigo-500 rounded transition-colors"
+              >
+                Categorías
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={handleButtonClick}
+                className="w-full px-3 py-2 bg-indigo-600 hover:bg-indigo-500 rounded transition-colors"
+              >
+                Productos
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={handleIngredienteClick}
+                className="w-full px-3 py-2 bg-indigo-600 hover:bg-indigo-500 rounded transition-colors"
+              >
+                Ingredientes
+              </button>
+            </li>
+          </>
+        )}
+        {/* Mostrar Comandas solo para camareros, admin y encargado */}
+        {(usuario.rol === 'admin' || usuario.rol === 'encargado' || usuario.rol === 'camarero') && (
           <li>
             <button
               onClick={handleComandasClick}

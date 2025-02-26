@@ -11,7 +11,7 @@ createRoot(document.getElementById("root")).render(
   <UserProvider>
     <StrictMode>
       
-      <App2 />
+      <App />
     </StrictMode>
   </UserProvider>
 );
