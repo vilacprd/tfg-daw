@@ -8,14 +8,40 @@ import { dirname } from 'path';
 import { Ingrediente, Category, ProductoConnection, Usuario, Categoria } from './models.js'; // Importa las clases
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-// 
+
 import AWS from 'aws-sdk';
 
-
+// Crear servidor socket
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 
 const app = express();
 const port = 3000;
 const SECRET_KEY = "claveSecreta";
+
+// CREAR SERVIDOR SOCKET
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*", // Asegúrate de permitir las conexiones necesarias
+    methods: ["GET", "POST"]
+  }
+});
+
+// Manejo de conexiones de socket
+io.on('connection', (socket) => {
+  console.log(`🟢 Usuario conectado: ${socket.id}`);
+
+  // Escuchar eventos personalizados
+  socket.on('mensaje', (data) => {
+    console.log('Mensaje recibido:', data);
+    io.emit('mensaje', data); // Reenviar a todos los clientes
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`🔴 Usuario desconectado: ${socket.id}`);
+  });
+});
 
 // Middleware
 app.use(cors());
@@ -513,10 +539,6 @@ app.delete('/server/ingredientes/:id', async (req, res) => {
   }
 });
 
-// Iniciar servidor
-app.listen(port, () => {
-  console.log(`Servidor corriendo en http://localhost:${port}`);
-});
 
 /*
  *
@@ -587,7 +609,7 @@ app.get('/api/categorias', async (req, res) => {
  */
 app.post('/api/sendOrder', async (req, res) => {
   try {
-    const {  total, productosShoppingList, anotaciones,  numberBoard } = req.body;
+    const { total, productosShoppingList, anotaciones, numberBoard } = req.body;
     console.log('Productos:', req.body);
     const orderData = {
       fecha: new Date(),
@@ -599,7 +621,10 @@ app.post('/api/sendOrder', async (req, res) => {
     };
     console.log('OrderData:', orderData);
     const order = await Order.create(orderData);
-  
+
+    // Emit the new order to all connected clients
+    io.emit('NewOrder', order);
+
     res.status(201).send("Enviado correctamente");
   } catch (error) {
     console.error('Error al guardar la orden:', error);
@@ -675,4 +700,10 @@ app.get('/s3/generateDownloadUrl/productos', (req, res) => {
     console.log("URL de descarga generada:", url); // Log de la URL generada
     res.json({ downloadUrl: url });
   });
+});
+
+
+// Iniciar el servidor HTTP en lugar de `app.listen`
+server.listen(port, () => {
+  console.log(`Servidor corriendo en http://localhost:${port}`);
 });
