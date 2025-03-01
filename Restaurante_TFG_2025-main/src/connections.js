@@ -1,7 +1,14 @@
 import axios from 'axios';
+import { io } from "socket.io-client";
 
 const API_URL = 'http://localhost:3000/server';
 const url = "https://myorderapp-production.up.railway.app/"
+const socket = io("http://localhost:3000");
+
+socket.on("NewOrder", (data) => {
+  console.log("New Order", data);
+});
+
 export const fetchProductos = async () => {
   try {
     const response = await axios.get(`${API_URL}/productos`);
