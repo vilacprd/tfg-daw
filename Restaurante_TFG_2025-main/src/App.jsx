@@ -59,7 +59,6 @@ const App = () => {
   const handleCrearProducto = () => { hideAllSections(); setShowCrearProducto(true); };
   const handleCrearIngrediente = () => { hideAllSections(); setShowCrearIngrediente(true); setIngredienteEdit(null); };
   const handleComandasClick = () => { hideAllSections(); setShowComandas(true); };
-  const handleComandaClick = (comanda) => { setSelectedComanda(comanda); };
   const handleUsuariosClick = () => { hideAllSections(); setShowUsuarios(true); };
 
   const addCategoria = (categoria) => { setCategorias([...categorias, categoria]); };
@@ -105,7 +104,7 @@ const App = () => {
               {showCrearProducto && <CrearProductoModal handleCloseModal={() => setShowCrearProducto(false)} categorias={categorias} />}
               {showCrearIngrediente && <CrearIngredienteModal handleCloseModal={() => setShowCrearIngrediente(false)} ingredienteEdit={ingredienteEdit} addIngrediente={addIngrediente} />}
               {showUsuarios && <Usuarios />}
-              {showComandas && <Comandas onComandaClick={handleComandaClick} />}
+              {showComandas && <Comandas  />}
             </>
           )}
         </div>

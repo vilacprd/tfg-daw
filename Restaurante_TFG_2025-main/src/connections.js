@@ -8,7 +8,19 @@ const socket = io("http://localhost:3000");
 socket.on("NewOrder", (data) => {
   console.log("New Order", data);
 });
+socket.on("connection", () => {
+  console.log("Connected to socket");
+});
 
+export const fetchOrdersActived = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/server/getOrdersActives`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al cargar las ordenes:', error);
+    throw error;
+  }
+}
 export const fetchProductos = async () => {
   try {
     const response = await axios.get(`${API_URL}/productos`);

@@ -635,9 +635,13 @@ app.post('/api/sendOrder', async (req, res) => {
 
 
 
-app.get('/server/getOrder', async (req, res) => {
+app.get('/server/getOrdersActives', async (req, res) => {
   try {
-    const orderObjet = await Order.findAll();
+    const orderObjet = await Order.findAll({
+      where: {
+        estado: 'pendiente'
+      }
+    });
     res.status(200).send(orderObjet);
 
   } catch (error) {
