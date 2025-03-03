@@ -115,8 +115,15 @@ const Order = sequelize.define('Order', {
     allowNull: false,
   },
   productos: {
-    type: DataTypes.ARRAY(DataTypes.JSON),
+    type: DataTypes.TEXT, // ✅ Guarda los productos como JSON string
     allowNull: false,
+    get() {
+      const rawValue = this.getDataValue('productos');
+      return rawValue ? JSON.parse(rawValue) : [];
+    },
+    set(value) {
+      this.setDataValue('productos', JSON.stringify(value));
+    },
   },
   anotaciones: {
     type: DataTypes.STRING,
@@ -610,30 +617,51 @@ app.get('/api/categorias', async (req, res) => {
 app.post('/api/sendOrder', async (req, res) => {
   try {
     const { total, productosShoppingList, anotaciones, numberBoard } = req.body;
-    console.log('Productos:', req.body);
+    
     const orderData = {
       fecha: new Date(),
       total,
-      productos: productosShoppingList,
+      productos: JSON.stringify(productosShoppingList), // ✅ Convertir a string antes de guardar
       anotaciones,
       estado: 'pendiente',
       mesa: numberBoard
     };
-    console.log('OrderData:', orderData);
     const order = await Order.create(orderData);
-
-    // Emit the new order to all connected clients
-    io.emit('NewOrder', order);
-
     res.status(201).send("Enviado correctamente");
+    
+    const orderDataModificated = {
+      ...order.dataValues,
+      productos: order.productos ? JSON.parse(order.productos) : [] // ✅ Convertir de string a array
+    };
+    
+    // Emit the new order to all connected clients
+    io.emit('NewOrder', orderDataModificated);
+
   } catch (error) {
     console.error('Error al guardar la orden:', error);
     res.status(500).send({ message: 'Error al guardar la orden', error });
   }
-}
-);
+});
 
+app.put('/server/updateOrderCompleted', async (req, res) => {
+  try {
+    console.log('IDs de órdenes a actualizar:', req.body);
+    const { orderIds } = req.body;
+    if (!Array.isArray(orderIds) || orderIds.length === 0) {
+      return res.status(400).send({ message: 'No se proporcionaron IDs de órdenes válidos' });
+    }
 
+    await Order.update(
+      { estado: 'completado' },
+      { where: { id: orderIds } }
+    );
+
+    res.status(200).send({ message: 'Órdenes actualizadas correctamente' });
+  } catch (error) {
+    console.error('Error al actualizar las órdenes:', error);
+    res.status(500).send({ message: 'Error al actualizar las órdenes', error });
+  }
+});
 
 app.get('/server/getOrdersActives', async (req, res) => {
   try {
@@ -642,8 +670,12 @@ app.get('/server/getOrdersActives', async (req, res) => {
         estado: 'pendiente'
       }
     });
-    res.status(200).send(orderObjet);
+    const formattedOrders = orderObjet.map(order => ({
+      ...order.dataValues,
+      productos: order.productos ? JSON.parse(order.productos) : [] // ✅ Convertir de string a array
+    }));
 
+    res.json(formattedOrders);
   } catch (error) {
     res.status(500).send(error);
   }

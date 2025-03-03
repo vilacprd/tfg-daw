@@ -3,18 +3,32 @@ import { io } from "socket.io-client";
 
 const API_URL = 'http://localhost:3000/server';
 const url = "https://myorderapp-production.up.railway.app/"
-const socket = io("http://localhost:3000");
+export const socket = io("http://localhost:3000");
 
 socket.on("NewOrder", (data) => {
-  console.log("New Order", data);
+  
+ // console.log("New Order", data);
+
 });
 socket.on("connection", () => {
   console.log("Connected to socket");
 });
 
+export const UpdateStateOrder = async (orderIds) => {
+  try {
+    const response = await axios.put(`${API_URL}/updateOrderCompleted`, { orderIds });
+    console.log('Órdenes actualizadas:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error al actualizar el estado de la orden", error);
+  }
+}
+
 export const fetchOrdersActived = async () => {
   try {
-    const response = await axios.get(`${API_URL}/server/getOrdersActives`);
+    const response = await axios.get(`${API_URL}/getOrdersActives`);
+    console.log('Server response:', response);
+    console.log('Server response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error al cargar las ordenes:', error);
@@ -230,4 +244,4 @@ export const uploadImageToS3 = async (file, ubicacion) => {
     }
   };
 
-export default { API_URL, getUploadUrl: getUploadUrlProductos };
+export default { API_URL, getUploadUrl: getUploadUrlProductos , fetchOrdersActived};

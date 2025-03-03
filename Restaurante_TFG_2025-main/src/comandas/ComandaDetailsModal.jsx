@@ -1,9 +1,78 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { UpdateStateOrder, socket } from '../connections';
 
-const ComandaDetailsModal = ({ mesa, onClose }) => {
+const ComandaDetailsModal = ({ mesa, onClose, mesas, setMesas }) => {
   if (!mesa || !mesa.comandas) {
     return null; // Return null if mesa or mesa.comandas is undefined
   }
+
+  const SetUpdateStateOrder = async () => {
+    var orderIds = [];
+    mesa.comandas.map((comanda) => {
+      orderIds.push(comanda.id);
+    });
+    console.log("orderIds", orderIds);
+    var response = await UpdateStateOrder(orderIds);
+    if (response) {
+      mesa.comandas = [];
+      mesa.activa = false;
+      onClose();
+    }
+  };
+
+  useEffect(() => {
+    const handleNewOrder = (newComanda) => {
+    
+      setMesas(prevMesas => {
+        const mesaComanda = prevMesas.findIndex(mesa => Number(mesa.numero) === Number(newComanda.mesa));
+        console.log("MESA COMANDA", mesaComanda);
+
+        if (mesaComanda !== -1) {
+          const mesasActualizadas = [...prevMesas];
+          mesasActualizadas[mesaComanda] = {
+            ...mesasActualizadas[mesaComanda],
+            comandas: [...mesasActualizadas[mesaComanda].comandas, newComanda],
+            activa: true
+          };
+
+          console.log("MESA ACTUALIZADA", mesasActualizadas);
+          return mesasActualizadas;
+        } else {
+          console.warn("Mesa no encontrada para la comanda:", newComanda);
+          return prevMesas;
+        }
+      });
+    };
+
+    const handleOrderUpdate = (updatedComanda) => {
+      setMesas(prevMesas => {
+        const mesaComanda = prevMesas.findIndex(mesa => Number(mesa.numero) === Number(updatedComanda.mesa));
+
+        if (mesaComanda !== -1) {
+          const mesasActualizadas = [...prevMesas];
+          mesasActualizadas[mesaComanda] = {
+            ...mesasActualizadas[mesaComanda],
+            comandas: mesasActualizadas[mesaComanda].comandas.map(comanda =>
+              comanda.id === updatedComanda.id ? updatedComanda : comanda
+            ),
+            activa: true
+          };
+          return mesasActualizadas;
+        } else {
+          console.warn("Mesa no encontrada para la comanda:", updatedComanda);
+          return prevMesas;
+        }
+      });
+    };
+
+    socket.on('NewOrder', handleNewOrder);
+    socket.on('OrderUpdated', handleOrderUpdate);
+
+    return () => {
+      socket.off('NewOrder', handleNewOrder);
+      socket.off('OrderUpdated', handleOrderUpdate);
+    };
+  }, [setMesas, mesas]);
 
   const totalPrice = mesa.comandas.reduce((total, comanda) => total + (comanda.total || 0), 0);
 
@@ -47,6 +116,7 @@ const ComandaDetailsModal = ({ mesa, onClose }) => {
           </div>
         ))}
         <p className="font-bold text-right text-xl">Precio Final de la Mesa: {totalPrice.toFixed(2)} €</p>
+        <button onClick={SetUpdateStateOrder} className="mt-4 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">Finalizar Mesa</button>
       </div>
     </div>
   );

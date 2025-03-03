@@ -3,6 +3,7 @@ import mesaVerde from '../assets/MesaRestauranteVerdeApp.png';
 import mesaRoja from '../assets/MesaRestauranteRojaApp.png';
 import '../styles/Comandas.css';
 import ComandaDetailsModal from './ComandaDetailsModal';
+import {fetchOrdersActived, socket} from '../connections';
 
 const Comandas = () => {
   const [mesas, setMesas] = useState([]);
@@ -24,180 +25,63 @@ const Comandas = () => {
       { id: 10, numero: 10, activa: false, comandas: [] }
     ];
     setMesas(mesasData);
-
-    // Simulated data for comandas
-    const comandasData = [
-      {
-        id: 1,
-        fecha: '2025-03-01T17:55:47.428Z',
-        total: 121,
-        productos: [
-          {
-            cantidad: 1,
-            categoria: [{ id: 1, nombre: 'Pizza' }],
-            descripcion: 'Es una pizza Peperonis',
-            id: 24,
-            idList: 1,
-            imagen: 'Img_Productos/Captura de pantalla (8).png',
-            ingredientesExtras: [],
-            ingredientesOriginales: [{ id: 1, nombre: 'Peperoni' }],
-            isActived: true,
-            isPersonalizable: true,
-            nombre: 'Pizza peperonis',
-            precio: 121
-          }
-        ],
-        anotaciones: 'ANOTACIONES',
-        estado: 'pendiente',
-        mesa: 2
-      },
-      {
-        id: 2,
-        fecha: '2025-03-01T18:00:00.000Z',
-        total: 50,
-        productos: [
-          {
-            cantidad: 2,
-            categoria: [{ id: 2, nombre: 'Bebida' }],
-            descripcion: 'Es una Coca Cola',
-            id: 25,
-            idList: 2,
-            imagen: 'Img_Productos/Captura de pantalla (9).png',
-            ingredientesExtras: [],
-            ingredientesOriginales: [{ id: 2, nombre: 'Coca Cola' }],
-            isActived: true,
-            isPersonalizable: false,
-            nombre: 'Coca Cola',
-            precio: 25
-          }
-        ],
-        anotaciones: 'SIN HIELO',
-        estado: 'pendiente',
-        mesa: 2
-      },
-      {
-        id: 3,
-        fecha: '2025-03-01T18:05:00.000Z',
-        total: 30,
-        productos: [
-          {
-            cantidad: 1,
-            categoria: [{ id: 3, nombre: 'Comida' }],
-            descripcion: 'Es una hamburguesa',
-            id: 26,
-            idList: 3,
-            imagen: 'Img_Productos/Captura de pantalla (10).png',
-            ingredientesExtras: [],
-            ingredientesOriginales: [{ id: 3, nombre: 'Queso' }],
-            isActived: true,
-            isPersonalizable: true,
-            nombre: 'Hamburguesa',
-            precio: 30
-          }
-        ],
-        anotaciones: 'EXTRA QUESO',
-        estado: 'pendiente',
-        mesa: 2
-      },
-      {
-        id: 4,
-        fecha: '2025-03-01T18:10:00.000Z',
-        total: 20,
-        productos: [
-          {
-            cantidad: 2,
-            categoria: [{ id: 4, nombre: 'Bebida' }],
-            descripcion: 'Es una Fanta',
-            id: 27,
-            idList: 4,
-            imagen: 'Img_Productos/Captura de pantalla (11).png',
-            ingredientesExtras: [],
-            ingredientesOriginales: [{ id: 4, nombre: 'Fanta' }],
-            isActived: true,
-            isPersonalizable: false,
-            nombre: 'Fanta',
-            precio: 10
-          }
-        ],
-        anotaciones: '',
-        estado: 'pendiente',
-        mesa: 4
-      },
-      {
-        id: 5,
-        fecha: '2025-03-01T18:15:00.000Z',
-        total: 40,
-        productos: [
-          {
-            cantidad: 1,
-            categoria: [{ id: 5, nombre: 'Comida' }],
-            descripcion: 'Es una ensalada',
-            id: 28,
-            idList: 5,
-            imagen: 'Img_Productos/Captura de pantalla (12).png',
-            ingredientesExtras: [],
-            ingredientesOriginales: [{ id: 5, nombre: 'Tomate' }],
-            isActived: true,
-            isPersonalizable: true,
-            nombre: 'Ensalada',
-            precio: 40
-          }
-        ],
-        anotaciones: 'SIN TOMATE',
-        estado: 'pendiente',
-        mesa: 5
-      }
-    ];
-    setComandas(comandasData);
-    ordenarComandas()
   }, []);
 
-  function ordenarComandas(){
-    comandas.map((comanda) => {
-      switch(comanda.mesa){
-        case 1:
-          mesas[0].comandas.push(comanda);
-          break;
-        case 2:
-          mesas[1].comandas.push(comanda);
-          break;
-        case 3:
-          mesas[2].comandas.push(comanda);
-          break;
-        case 4:
-          mesas[3].comandas.push(comanda);
-          break;
-        case 5:
-          mesas[4].comandas.push(comanda);
-          break;
-        case 6:
-          mesas[5].comandas.push(comanda);
-          break;
-        case 7:
-          mesas[6].comandas.push(comanda);
-          break;
-        case 8:
-          mesas[7].comandas.push(comanda);
-          break;
-        case 9:
-          mesas[8].comandas.push(comanda);
-          break;
-        case 10:
-          mesas[9].comandas.push(comanda);
-          break;
-      }
-    });
-  }
   useEffect(() => {
-    if (mesas.length > 0 && comandas.length > 0) {
-      // Filter comandas by table and add each comanda to the corresponding table
-      const updatedMesas = mesas.map(mesa => {
+    const cargarComandas = async () => {
+      try {
+        var comandasActivas = await fetchOrdersActived(); // ✅ Esperamos la respuesta
+        console.log("COMANDA ACTIVAS", comandasActivas);
+        setComandas(comandasActivas); // ✅ Ahora tiene los datos correctos
+      } catch (error) {
+        console.error("Error al obtener las comandas activas", error);
+      }
+    };
+
+    cargarComandas();
+  }, []);
+
+  useEffect(() => {
+    socket.on('NewOrder', (newComanda) => {
+        console.log("MESA NUEVA COMANDA", newComanda.mesa);
+        console.log("MESA NUEVA ", mesas);
+
+        var mesaComanda = mesas.findIndex(mesa => Number(mesa.numero) === Number(newComanda.mesa));
+        console.log("MESA COMANDA", mesaComanda);
+
+        if (mesaComanda !== -1) { 
+            // Clonar el estado correctamente
+            var mesasActualizadas = [...mesas];
+            mesasActualizadas[mesaComanda] = {
+                ...mesasActualizadas[mesaComanda],
+                comandas: [...mesasActualizadas[mesaComanda].comandas, newComanda],
+                activa: true
+            };
+            
+            console.log("MESA ACTUALIZADA", mesasActualizadas);
+            setMesas(mesasActualizadas);
+
+            // Reload the modal if it is open
+            if (selectedMesa && selectedMesa.numero === newComanda.mesa) {
+              setSelectedMesa(mesasActualizadas[mesaComanda]);
+            }
+
+        } else {
+            console.warn("Mesa no encontrada para la comanda:", newComanda);
+        }
+    });
+
+    return () => socket.off('NewOrder');
+}, [mesas, selectedMesa]); // Dependencia del useEffect
+
+  useEffect(() => {
+    setMesas(prevMesas => {
+      const updatedMesas = prevMesas.map(mesa => {
         const mesaComandas = comandas.filter(comanda => comanda.mesa === mesa.numero);
         return { ...mesa, comandas: mesaComandas, activa: mesaComandas.length > 0 };
       });
-      setMesas(updatedMesas);
-      ordenarComandas()
-    }
+      return updatedMesas;
+    });
   }, [comandas]);
 
   const handleMesaClick = (mesa) => {
@@ -207,6 +91,7 @@ const Comandas = () => {
   const closeModal = () => {
     setSelectedMesa(null);
   };
+
 
   return (
     <div>
@@ -230,7 +115,7 @@ const Comandas = () => {
         })}
       </div>
       {selectedMesa && (
-        <ComandaDetailsModal mesa={selectedMesa} onClose={closeModal} />
+        <ComandaDetailsModal mesa={selectedMesa} onClose={closeModal} mesas={mesas} setMesas={setMesas} />
       )}
     </div>
   );
