@@ -92,8 +92,8 @@ export default function Login() {
           <div style={{ clipPath: "polygon(0px 0px, 100% 0px, 100% 47.12%, 0px 47.12%)", backdropFilter: "blur(10px)" }} className="h-full w-full bg-white bg-opacity-80 absolute z-0 rounded-full"></div>
         </div>
         <div className="mt-6 mb-4 text-beef">
-          <h3 className="leading-[88%] font-flame text-5xl w-full text-center font-bold mb-4">Welcome to Hungry Joes!</h3>
-          <p>Please wait, a waiter will be here shortly to serve you.</p>
+          <h3 className="leading-[88%] font-flame text-5xl w-full text-center font-bold mb-4">Bienvenido a Hungry Joes</h3>
+          <p>Por favor, introduce tu nombre de usuario junto a tu contraseña para continuar.</p>
         </div>
         {/* Input para el nombre de usuario */}
         <Input 
@@ -110,11 +110,11 @@ export default function Login() {
         <Input 
             type="password" 
             className="w-full grow text-beef" 
-            placeHolder="Password"
+            placeHolder="Contraseña"
             value={usuario.password} // ✅ Controlado externamente
             onChange={(e) => {
               console.log("Nueva contraseña ingresada:", e.target.value); // 🚀 Depuración
-              setUsuario({ ...usuario, password: e.target.value });
+              setUsuario({ ...usuario, password: e.target.value.trim() });
             }}
         />
 
@@ -124,7 +124,7 @@ export default function Login() {
             <path d="M0.805579 8.05524H6.67427L5.92535 8.80417C5.61146 9.11805 5.61146 9.62781 5.92535 9.94407C6.08268 10.1014 6.28801 10.1801 6.4949 10.1801C6.70257 10.1801 6.90791 10.1014 7.06445 9.94407L9.18931 7.81921C9.50319 7.50532 9.50319 6.99556 9.18931 6.6793L7.06445 4.55524C6.75056 4.24135 6.2408 4.24135 5.92454 4.55524C5.61065 4.86913 5.61065 5.37888 5.92454 5.69515L6.67425 6.44408H0.805559C0.360306 6.44408 0 6.80438 0 7.24964C0 7.69489 0.360327 8.05524 0.805579 8.05524Z" fill="white"/>
             <path d="M11.5486 0H4.92332C3.91873 0 3.10059 0.817362 3.10059 1.82274V3.76583C3.10059 4.21108 3.46089 4.57139 3.90614 4.57139C4.3514 4.57139 4.7117 4.21108 4.7117 3.76583V1.82274C4.7117 1.70631 4.8061 1.61112 4.92332 1.61112H11.5486C11.6651 1.61112 11.7603 1.70552 11.7603 1.82274V12.6773C11.7603 12.7937 11.6659 12.8889 11.5486 12.8889H4.92332C4.8069 12.8889 4.7117 12.7945 4.7117 12.6773V10.7074C4.7117 10.2622 4.3514 9.90186 3.90614 9.90186C3.46089 9.90186 3.10059 10.2622 3.10059 10.7074V12.6773C3.10059 13.6819 3.91795 14.5 4.92332 14.5H11.5486C12.5532 14.5 13.3714 13.6826 13.3714 12.6773V1.82274C13.3714 0.817362 12.554 0 11.5486 0Z" fill="white"/>
           </svg>
-          <p>Log in</p>
+          <p>Iniciar Sesión</p>
         </Button>
       </form>
     </div>

@@ -91,16 +91,7 @@ const ListaProductos = ({ categorias }) => {
           Agregar Producto
         </button>
 
-        {/* Checkbox Activos */}
-        <label className="flex items-center mb-4">
-          <input
-            type="checkbox"
-            checked={isActive}
-            onChange={handleCheckboxChangeStatus}
-            className="mr-2"
-          />
-          Activos
-        </label>
+        
 
         {/* Input de búsqueda */}
         <input

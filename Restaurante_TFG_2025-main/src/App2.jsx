@@ -2,11 +2,11 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom
 import DashboardWrapper from "./components/DashboardWrapper/DashboardWrapper";
 import { useUser } from "./context/userContext";
 import Login from "./components/Login/Login";
-import ListaProductos from './productos/ListaProductos';
-import Categorias from './categorias/Categorias';
-import Ingredientes from './ingredientes/Ingredientes';
-import Usuarios from './Users/Usuarios';
-import Comandas from './comandas/Comandas';
+import Productos from './components/Productos/Productos';
+import Categorias from './components/Categorias/Categorias';
+import Ingredientes from './components/Ingredientes/Ingredientes';
+import Usuarios from './components/Usuarios/Usuarios'
+import Comandas from './components/Comandas/Comandas';
 import Dashboard from './components/Dashboard/Dashboard';
 
 // Este componente protege las rutas que requieren login
@@ -55,33 +55,33 @@ const App = () => {
                     <Route element={<DashboardWrapper />}>
                         <Route path="/dashboard">
                             <Route index element={<Dashboard />} />
-                            <Route path="productos" element={<ListaProductos />} />
-                            <Route path="categorias" element={<Categorias />} />
-                            <Route path="ingredientes" element={<Ingredientes />} />
-                            <Route 
-                                path="comandas" 
-                                element={
-                                    <PrivateRoute allowedRoles={['admin', 'encargado']}>
-                                        <Comandas />
-                                    </PrivateRoute>
-                                } 
-                            />
-                            <Route 
-                                path="usuarios" 
-                                element={
-                                    <PrivateRoute allowedRoles={['admin']}>
-                                        <Usuarios />
-                                    </PrivateRoute>
-                                } 
-                            />
+                            <Route path="productos" element={<PrivateRoute allowedRoles={['admin','encargado']} />}>
+                                <Route index element={<Productos/>} />
+                            </Route>
+                            <Route path="categorias" element={<PrivateRoute allowedRoles={['admin','encargado']} />}>
+                                <Route index element={<Categorias/>} />
+                            </Route>
+                            <Route path="ingredientes" element={<PrivateRoute allowedRoles={['admin','encargado']} />}>
+                                <Route index element={<Ingredientes/>} />
+                            </Route>
+                            <Route path="comandas" element={<PrivateRoute allowedRoles={['admin','encargado','camarero']} />}>
+                                <Route index element={<Comandas/>} />
+                            </Route>
+                            <Route path="usuarios" element={<PrivateRoute allowedRoles={['admin']} />}>
+                                <Route index element={<Usuarios />} />
+                            </Route>
                             { /*404*/ }
                             <Route 
                                 path="*" 
                                 element={
-                                    <h3>404</h3>
+                                    <Dashboard />
                                 } 
                             />
                         </Route>
+                        <Route path="*" 
+                                element={
+                                    <Dashboard />
+                                } />
                     </Route>
                 </Route>
             </Routes>

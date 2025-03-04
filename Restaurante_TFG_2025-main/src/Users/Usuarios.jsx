@@ -212,9 +212,9 @@ const Usuarios = () => {
               {/* Modal para confirmación de eliminación */}
 {deleteConfirm && (
   <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-    <div className="bg-white p-6 rounded-md w-full max-w-md">
-      <h2 className="text-xl font-bold mb-4">⚠️ Confirmar Eliminación</h2>
-      <p className="mb-3 text-gray-700">
+    <div className="bg-cream p-6 rounded-md w-full max-w-md">
+      <h2 className="text-xl font-bold mb-4 text-beef">⚠️ Confirmar Eliminación</h2>
+      <p className="mb-3 text-beef-700 font-flame">
         Estás a punto de eliminar tu propia cuenta y cerrar tu sesión. Escribe tu nombre <strong>{currentUser.nombre}</strong> para confirmar.
       </p>
       <input
@@ -222,19 +222,19 @@ const Usuarios = () => {
         placeholder="Escribe tu nombre..."
         value={deleteUsername}
         onChange={handleUsernameInput}
-        className="w-full border p-2 rounded mb-3"
+        className="p-2 border border-beef/10 rounded focus:outline-none focus:border-beef/50 bg-cream-dark "
       />
       <div className="flex justify-end gap-2">
         <button 
           onClick={() => setDeleteConfirm(false)} 
-          className="px-4 py-2 border rounded"
+          className="px-6 py-2 border border-beef/10 rounded-md font-flame"
         >
           Cancelar
         </button>
         <button 
           onClick={handleConfirmDelete} 
           disabled={disableConfirm} 
-          className="px-4 py-2 bg-red-500 text-white rounded disabled:bg-gray-400"
+          className="px-6 py-2 bg-ketchup text-cream rounded-ms disabled:bg-ketchup/20 font-flame"
         >
           Confirmar
         </button>
