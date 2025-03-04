@@ -43,8 +43,6 @@ const Comandas = () => {
 
   useEffect(() => {
     socket.on('NewOrder', (newComanda) => {
-        console.log("MESA NUEVA COMANDA", newComanda.mesa);
-        console.log("MESA NUEVA ", mesas);
 
         var mesaComanda = mesas.findIndex(mesa => Number(mesa.numero) === Number(newComanda.mesa));
         console.log("MESA COMANDA", mesaComanda);

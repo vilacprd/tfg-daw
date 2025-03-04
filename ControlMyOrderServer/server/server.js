@@ -201,7 +201,54 @@ app.post('/server/login', async (req, res) => {
     res.status(500).json({ message: "Error en el servidor", error });
   }
 });
+app.put('/server/removeProductFromOrder', async (req, res) => {
+  try {
+    const { comandaId, productId } = req.body;
+    console.log('comandaId', comandaId);
+    console.log('productId', productId);
+    const order = await Order.findByPk(comandaId);
+    if (order) {
+      let productos = order.productos;
+      if (typeof productos === 'string') {
+        productos = JSON.parse(productos);
+      }
+      const updatedProducts = productos.filter(product => product.id !== productId);
+      if (updatedProducts.length === 0) {
+        await order.destroy();
+        res.status(200).send({ message: 'Orden eliminada porque no tiene productos' });
+      } else {
+        order.productos = JSON.stringify(updatedProducts);
+        await order.save();
+        res.status(200).send(order);
+      }
+    } else {
+      res.status(404).send({ message: 'Orden no encontrada' });
+    }
+  } catch (error) {
+    console.error('Error al eliminar el producto de la orden:', error);
+    res.status(500).send({ message: 'Error al eliminar el producto de la orden', error });
+  }
+});
 
+app.get('/server/getMesa/:idMesa', async (req, res) => {
+  try {
+    const idMesa = req.params.idMesa;
+    const orderObjet = await Order.findAll({
+      where: {
+        mesa: idMesa,
+        estado: 'pendiente'
+      }
+    });
+    const formattedOrders = orderObjet.map(order => ({
+      ...order.dataValues,
+      productos: order.productos ? JSON.parse(order.productos) : [] // ✅ Convertir de string a array
+    }));
+    res.status(200).send(formattedOrders);
+  } catch (error) {
+    console.error('Error al obtener las órdenes de la mesa:', error);
+    res.status(500).send({ message: 'Error al obtener las órdenes de la mesa', error });
+  }
+});
 
 app.post('/server/usuarios', async (req, res) => {
   try {

@@ -23,7 +23,27 @@ export const UpdateStateOrder = async (orderIds) => {
     console.error("Error al actualizar el estado de la orden", error);
   }
 }
+export const conectionRemoveProductFromOrder = async (comandaId, productId) => {
+  try {
+    const response = await axios.put(`${API_URL}/removeProductFromOrder`, { comandaId, productId });
+    console.log('Producto eliminado de la orden:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error al eliminar el producto de la orden", error);
+  }
+}
 
+export const getDataMesa= async (idMesa) => {
+  try {
+    const response = await axios.get(`${API_URL}/getMesa/${idMesa}`);
+    console.log('Server response:', response);
+    console.log('Server response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error al cargar las ordenes:', error);
+    throw error;
+  }
+}
 export const fetchOrdersActived = async () => {
   try {
     const response = await axios.get(`${API_URL}/getOrdersActives`);
